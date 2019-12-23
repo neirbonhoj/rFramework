@@ -10,6 +10,10 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\rConfig\rConfig.csproj" />
+  </ItemGroup>
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="xcopy /d /y &quot;$(ProjectDir)bin\Debug\netcoreapp3.1\*&quot; &quot;C:\Users\John\Documents\FiveM_Stuff\Server\cfx-server-data-master\resources\rFramework\rDiscordBot&quot;" />
   </Target>

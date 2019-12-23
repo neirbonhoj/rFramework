@@ -9,7 +9,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rFrameworkPolice[Client]", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rConfig", "rConfig\rConfig.csproj", "{A1141B9B-C957-48D2-A7E9-F2DD3D3A7465}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rDiscordBot", "rDiscordBot\rDiscordBot.csproj", "{FAA75B5C-235E-4B21-A210-4AFB33476E11}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "rDiscordBot", "rDiscordBot\rDiscordBot.csproj", "{FAA75B5C-235E-4B21-A210-4AFB33476E11}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rPlayerManager[Server]", "rPlayerManager[Server]\rPlayerManager[Server].csproj", "{2E62A9CB-97F3-4B26-A8E4-171316A400DB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rPlayerManager[Client]", "rPlayerManager[Client]\rPlayerManager[Client].csproj", "{58F71BFC-7B52-4DE1-A118-4482388A4B36}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,14 @@ Global
 		{FAA75B5C-235E-4B21-A210-4AFB33476E11}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAA75B5C-235E-4B21-A210-4AFB33476E11}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FAA75B5C-235E-4B21-A210-4AFB33476E11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E62A9CB-97F3-4B26-A8E4-171316A400DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E62A9CB-97F3-4B26-A8E4-171316A400DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E62A9CB-97F3-4B26-A8E4-171316A400DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E62A9CB-97F3-4B26-A8E4-171316A400DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58F71BFC-7B52-4DE1-A118-4482388A4B36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58F71BFC-7B52-4DE1-A118-4482388A4B36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58F71BFC-7B52-4DE1-A118-4482388A4B36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58F71BFC-7B52-4DE1-A118-4482388A4B36}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -13,29 +13,6 @@ namespace rFrameworkPolice_Server_
 {
     public static class Functions
     {
-        #region Discord Functions
-        public static Player GetPlayerFromDiscordID(PlayerList players, ulong DiscordID)
-        {
-            foreach (Player p in players)
-            {
-                if (ulong.Parse(p.Identifiers["discord"]).Equals(DiscordID))
-                {
-                    return p;
-                }
-            }
-
-            return null;
-        }
-        public static void StartDiscordBotProcess()
-        {
-            string FilePath = Path.Combine(Environment.CurrentDirectory, @"resources\rFramework\rDiscordBot\rDiscordBot.exe");
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.WindowStyle = ProcessWindowStyle.Minimized;
-            startInfo.FileName = FilePath;
-            Process.Start(startInfo);
-        }
-        #endregion
-
         #region SQL Functions
         public async static Task<MySqlDataReader> ExecuteSQLQuery(string SQLQuery)
         {

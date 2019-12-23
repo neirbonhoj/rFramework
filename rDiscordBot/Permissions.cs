@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using Newtonsoft.Json;
 using Discord.WebSocket;
+using static rConfig.ConfigManager;
 namespace rDiscordBot
 {
     class Permissions
@@ -55,14 +56,17 @@ namespace rDiscordBot
             {
                 PreserveReferencesHandling = PreserveReferencesHandling.Objects
             });
-            string path = Path.Combine(Environment.CurrentDirectory, @"DiscordPermissionsFile.txt");
-            File.WriteAllText(path, permissionsJson);
+            File.WriteAllText(PermissionFilePath, permissionsJson);
         }
 
         public static void WritePlayerPermissions(ulong PlayerDiscordID)
         {
-            string path = Path.Combine(Environment.CurrentDirectory, @"DiscordPermissionsFile.txt");
-            Dictionary<ulong, List<ulong>> ExistingPermissionsUpdate = JsonConvert.DeserializeObject<Dictionary<ulong, List<ulong>>>(File.ReadAllText(path));
+            Dictionary<ulong, List<ulong>> ExistingPermissionsUpdate = JsonConvert.DeserializeObject<Dictionary<ulong, List<ulong>>>(File.ReadAllText(PermissionFilePath));
+            if (ExistingPermissionsUpdate == null)
+            {
+                ExistingPermissionsUpdate = new Dictionary<ulong, List<ulong>>();
+            }
+
             if (ExistingPermissionsUpdate.ContainsKey(PlayerDiscordID))
             {
                 ExistingPermissionsUpdate[PlayerDiscordID] = UserPermissions[PlayerDiscordID];
@@ -75,7 +79,7 @@ namespace rDiscordBot
             {
                 PreserveReferencesHandling = PreserveReferencesHandling.Objects
             });
-            File.WriteAllText(path, permissionsJson);
+            File.WriteAllText(PermissionFilePath, permissionsJson);
         }
     }
 }

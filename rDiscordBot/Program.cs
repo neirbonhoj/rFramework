@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Webhook;
 using Discord.WebSocket;
-
+using static rConfig.ConfigManager;
 namespace rDiscordBot
 {
     class Program
@@ -22,7 +22,7 @@ namespace rDiscordBot
             _client.Log += Log;
 
             //Hard coded token... oops!
-            var token = "MzQ0NjY3MDg1NjU1NTA2OTQ0.Xd9jBg.0boDX6khZXYrmelKkatLwV_fqpQ";
+            var token = "MzQ0NjY3MDg1NjU1NTA2OTQ0.XeyA7g.ouNWgJpsmwp8dyZrwqvLpp0h6mg";
             await _client.LoginAsync(TokenType.Bot, token);
             await _client.StartAsync();
 
@@ -46,6 +46,7 @@ namespace rDiscordBot
                 }
                 return Task.CompletedTask;
             };
+
             await Task.Delay(-1);
         }
 

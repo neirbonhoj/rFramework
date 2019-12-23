@@ -13,12 +13,6 @@ namespace rFrameworkPolice_Server_
         public Main()
         {
             InitConfig();
-            //Cache the users table in the database
-            string SQLQuery = "SELECT * FROM `users`";
-            ExecuteSQLQuery(SQLQuery);
-
-            //Start Discord bot
-            StartDiscordBotProcess();
         }
     }
 }

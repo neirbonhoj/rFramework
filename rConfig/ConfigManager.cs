@@ -12,6 +12,12 @@ namespace rConfig
     public static class ConfigManager
     {
         public static Dictionary<string, object> config = new Dictionary<string, object>();
+        public static readonly string PermissionFilePath = Path.Combine(Environment.CurrentDirectory, @"resources\rFramework\rDiscordBot\DiscordPermissionsFile.txt");
+
+        public static Dictionary<string, ulong> DiscordRoleIDs = new Dictionary<string, ulong>()
+        {
+            ["police"] = 650174452709064714
+        };
 
         public static void InitConfig()
         {
