@@ -17,13 +17,16 @@ namespace rPlayerManager_Server_
         {
             if (!IsSetupComplete)
             {
+                TriggerClientEvent("");
                 InitConfig();
 
                 StartDiscordBotProcess();
 
+                ExecuteSQLQuery("SELECT * FROM `users`");
+
                 EventHandlers.Add("playerConnecting", new Action<Player, String, dynamic, dynamic>(PlayerConnecting));
                 EventHandlers.Add("playerDropped", new Action<Player, string>(PlayerDropped));
-                EventHandlers.Add("rFramework:RequestPermissions", new Action<Player>(RequestPermissions));
+                EventHandlers.Add("rFramework:PlayerSpawn", new Action<Player>(PlayerSpawn));
 
                 Tick += CheckForDiscordRoleChange;
 
@@ -38,7 +41,10 @@ namespace rPlayerManager_Server_
 
         public static void PlayerConnecting([FromSource] Player player, string playerName, dynamic setKickReason, dynamic deferrals)
         {
-            HandlePlayerConnectingRoles(player);
+            Task.Run(() =>
+            {
+                InitializeDatabasePlayer(player);
+            });
         }
 
         public static void PlayerDropped([FromSource] Player player, string reason)
@@ -46,16 +52,19 @@ namespace rPlayerManager_Server_
             HandlePlayerDroppedRoles(player);
         }
 
-        public static void RequestPermissions([FromSource] Player player)
+        public async static void PlayerSpawn([FromSource] Player player)
         {
-            //Debug.WriteLine("^9Player Discord ID: " + GetPlayerDiscordID(player));
-            //foreach(ulong u in PlayerDiscordRoles.Keys)
-            //{
-            //    Debug.WriteLine("^5" + u);
-            //}
-            //Debug.WriteLine("^1Printed All Names");
-            //Debug.WriteLine("^5" + PlayerDiscordRoles.ContainsKey(GetPlayerDiscordID(player)));
-            TriggerClientEvent(player, "rFramework:Permissions", JsonConvert.SerializeObject(PlayerDiscordRoles[GetPlayerDiscordID(player)]));
+            UpdateClientPermissions(player);
+        }
+
+        public static void UpdateClientPermissions(Player player)
+        {
+            List<ulong> PlayerRoles = PlayerDiscordRoles[GetPlayerDiscordID(player)];
+            string PlayerRolesJson = JsonConvert.SerializeObject(PlayerRoles);
+            long milliseconds = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+            player.TriggerEvent("rFramework:Permissions", PlayerRolesJson);
+            long milliseconds2 = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+            DebugWrite("TCE Runtime: " + (milliseconds2 - milliseconds));
         }
     }
 }

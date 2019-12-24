@@ -17,28 +17,42 @@ namespace rPlayerManager_Server_
         private static byte[] ExistingDiscordPermissionHash = new byte[1];
         public async static Task CheckForDiscordRoleChange()
         {
-            byte[] NewHash = GetFileHash(PermissionFilePath);
-            if (!ExistingDiscordPermissionHash.SequenceEqual(NewHash))
+            try
             {
-                string PermissionJson = System.IO.File.ReadAllText(PermissionFilePath);
-                Dictionary<ulong, List<ulong>> DiscordRoles = JsonConvert.DeserializeObject<Dictionary<ulong, List<ulong>>>(PermissionJson);
-                if(DiscordRoles == null)
+                byte[] NewHash = GetFileHash(PermissionFilePath);
+                if (!ExistingDiscordPermissionHash.SequenceEqual(NewHash))
                 {
-                    ExistingDiscordPermissionHash = NewHash;
-                    return;
+                    string PermissionJson = System.IO.File.ReadAllText(PermissionFilePath);
+                    Dictionary<ulong, List<ulong>> DiscordRoles = JsonConvert.DeserializeObject<Dictionary<ulong, List<ulong>>>(PermissionJson);
+                    if (DiscordRoles == null)
+                    {
+                        ExistingDiscordPermissionHash = NewHash;
+                        return;
+                    }
+                    foreach (ulong PlayerDiscordID in DiscordRoles.Keys)
+                    {
+                        PlayerDiscordRoles[PlayerDiscordID] = DiscordRoles[PlayerDiscordID];
+                        Player UpdatedPlayer = GetPlayerFromDiscordID(PlayerDiscordID);
+                        if (UpdatedPlayer != null)
+                        {
+                            EventManager.UpdateClientPermissions(UpdatedPlayer);
+                        }
+                        if (GetPlayerFromDiscordID(PlayerDiscordID) != null)
+                        {
+                            DebugWrite("Updated Player Permissions for " + GetPlayerFromDiscordID(PlayerDiscordID).Name);
+                        }
+                        else
+                        {
+                            DebugWrite("Updated Player Permissions for " + PlayerDiscordID + "[DiscordID]");
+                        }
+                    }
+                    await WriteAsync("");
+                    ExistingDiscordPermissionHash = GetFileHash(PermissionFilePath);
                 }
-                foreach (ulong PlayerDiscordID in DiscordRoles.Keys)
-                {
-                    PlayerDiscordRoles[PlayerDiscordID] = DiscordRoles[PlayerDiscordID];
-                    Debug.WriteLine("^2[rFramework]^5Updated Player Permissions^0");
-                }
-                File.WriteAllText(PermissionFilePath, "");
-                ExistingDiscordPermissionHash = GetFileHash(PermissionFilePath);
+            } catch(Exception e)
+            {
+                DebugWrite("^3File Reading Error - Noncritical (permissions must be refreshed)");
             }
-        }
-
-        public static void HandlePlayerConnectingRoles(Player ply)
-        {
         }
 
         public static void HandlePlayerDroppedRoles(Player ply)

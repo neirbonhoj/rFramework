@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EventManager.cs" />
+    <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -61,6 +62,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /d /y "$(ProjectDir)bin\Debug\rPlayerManager[Client].net.dll" "C:\Users\John\Documents\FiveM_Stuff\Server\cfx-server-data-master\resources\rFramework"</PostBuildEvent>
+    <PostBuildEvent>xcopy /d /y "$(ProjectDir)bin\Debug\rPlayerManager[Client].net.dll" "C:\Users\John\Documents\FiveM_Stuff\Server\cfx-server-data-master\resources\rFramework\client"</PostBuildEvent>
   </PropertyGroup>
 </Project>

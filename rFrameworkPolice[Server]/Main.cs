@@ -13,6 +13,7 @@ namespace rFrameworkPolice_Server_
         public Main()
         {
             InitConfig();
+            //Convert ESXPolice Project
         }
     }
 }
