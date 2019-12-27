@@ -6,20 +6,20 @@ using System.Threading.Tasks;
 using CitizenFX.Core;
 using static CitizenFX.Core.Native.API;
 using Newtonsoft.Json;
-using static rPlayerManager_Server_.DiscordDatabase;
-using static rPlayerManager_Server_.Functions;
-using static rConfig_Server_.ConfigManager;
+using static rFrameworkServer.DiscordDatabase;
+using static rFrameworkServer.Functions;
+using static rFrameworkServer.ConfigManager;
 using MySql.Data.MySqlClient;
 
-namespace rPlayerManager_Server_
+namespace rFrameworkServer
 {
-    public class EventManager : BaseScript
+    public class PlayerManager : BaseScript
     {
         private static bool IsSetupComplete = false;
 
         private static Dictionary<ulong, rFrameworkPlayer> OnlinePlayers;
         private static Dictionary<ulong, rFrameworkPlayer> ConnectingPlayers;
-        public EventManager()
+        public PlayerManager()
         {
             if (!IsSetupComplete)
             {

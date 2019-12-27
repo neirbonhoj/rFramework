@@ -72,18 +72,20 @@
     <Compile Include="EventManager.cs" />
     <Compile Include="Functions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="rFrameworkPlayer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\rConfig\rConfig.csproj">
-      <Project>{a1141b9b-c957-48d2-a7e9-f2dd3d3a7465}</Project>
-      <Name>rConfig</Name>
+    <ProjectReference Include="..\rConfig[Server]\rConfig[Server].csproj">
+      <Project>{ea46b154-0c31-4524-8843-6cbaa329ed81}</Project>
+      <Name>rConfig[Server]</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /d /y "$(ProjectDir)bin\Debug\rPlayerManager[Server].net.dll" "C:\Users\John\Documents\FiveM_Stuff\Server\cfx-server-data-master\resources\rFramework\server"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>

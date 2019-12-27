@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Webhook;
 using Discord.WebSocket;
-using static rConfig.ConfigManager;
+using static rConfig_Server_.ConfigManager;
 namespace rDiscordBot
 {
     class Program

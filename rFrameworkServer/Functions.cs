@@ -9,10 +9,12 @@ using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using CitizenFX.Core;
 using static CitizenFX.Core.Native.API;
-using static rConfig_Server_.ConfigManager;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
-namespace rPlayerManager_Server_
+
+using static rFrameworkServer.ConfigManager;
+
+namespace rFrameworkServer
 {
     public static class Functions 
     {
@@ -111,7 +113,7 @@ namespace rPlayerManager_Server_
 
                 if(rPlayer.IsPlayerLoaded && !(rPlayer.CorePlayer.Ping>0))
                 {
-                    EventManager.DropPlayerFromDatabaseUpdates(rPlayer);
+                    PlayerManager.DropPlayerFromDatabaseUpdates(rPlayer);
                 }
             }
             SQLQuery = SQLQuery.Substring(0, SQLQuery.Length - 2) + " ";
@@ -137,7 +139,7 @@ namespace rPlayerManager_Server_
 
         public static Player GetPlayerFromDiscordID(ulong DiscordID)
         {
-            foreach (Player p in new EventManager().GetPlayers())
+            foreach (Player p in new PlayerManager().GetPlayers())
             {
                 if (ulong.Parse(p.Identifiers["discord"]).Equals(DiscordID))
                 {

@@ -5,11 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using CitizenFX.Core;
 using Newtonsoft.Json;
-using static rPlayerManager_Server_.Functions;
-using static rConfig_Server_.ConfigManager;
+using static rFrameworkServer.Functions;
+using static rFrameworkServer.ConfigManager;
 using System.IO;
 
-namespace rPlayerManager_Server_
+namespace rFrameworkServer
 {
     public static class DiscordDatabase
     {
@@ -35,7 +35,7 @@ namespace rPlayerManager_Server_
                         Player UpdatedPlayer = GetPlayerFromDiscordID(PlayerDiscordID);
                         if (UpdatedPlayer != null)
                         {
-                            EventManager.UpdateClientPermissions(UpdatedPlayer);
+                            PlayerManager.UpdateClientPermissions(UpdatedPlayer);
                         }
                         if (GetPlayerFromDiscordID(PlayerDiscordID) != null)
                         {

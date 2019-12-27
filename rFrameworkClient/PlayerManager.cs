@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 using CitizenFX.Core;
 using Newtonsoft.Json;
 using static CitizenFX.Core.Native.API;
-using static rPlayerManager_Client_.Main;
-using static rPlayerManager_Client_.Functions;
+using static rFrameworkClient.Functions;
 using System.Threading;
 
-namespace rPlayerManager_Client_
+namespace rFrameworkClient
 {
-    public class EventManager : BaseScript
+    public class PlayerManager : BaseScript
     {
-        public EventManager()
+        public static Dictionary<ulong, int> Permissions = new Dictionary<ulong, int>();
+        public PlayerManager()
         {
             DisplayCash(true);
 

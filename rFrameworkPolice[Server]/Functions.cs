@@ -8,7 +8,7 @@ using CitizenFX.Core;
 using MySql.Data.MySqlClient;
 using System.IO;
 using System.Diagnostics;
-using static rConfig.ConfigManager;
+using static rConfig_Server_.ConfigManager;
 namespace rFrameworkPolice_Server_
 {
     public static class Functions
