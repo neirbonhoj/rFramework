@@ -92,10 +92,12 @@ namespace rFrameworkServer
 
                 rPlayer.BankBalance = 0;
                 rPlayer.CashBalance = 0;
+                rPlayer.Vehicles = "";
             } else
             {
                 rPlayer.BankBalance = SQLDataReader.GetInt64(2);
                 rPlayer.CashBalance = SQLDataReader.GetInt64(3);
+                rPlayer.Vehicles = SQLDataReader.GetString(4);
             }
 
             SQLCommand.Dispose();
@@ -106,10 +108,10 @@ namespace rFrameworkServer
 
         public static void DatabaseUpdatePlayerMoney(List<rFrameworkPlayer> players)
         {
-            string SQLQuery = "INSERT INTO users (discordID, bank, cash) VALUES ";
+            string SQLQuery = "INSERT INTO users (discordID, bank, cash, vehicles) VALUES ";
             foreach (rFrameworkPlayer rPlayer in players)
             {
-                SQLQuery += "(" + rPlayer.DiscordID + ", " + rPlayer.BankBalance + ", " + rPlayer.CashBalance + "), ";
+                SQLQuery += "(" + rPlayer.DiscordID + ", " + rPlayer.BankBalance + ", " + rPlayer.CashBalance + ", '" + rPlayer.Vehicles+"'), ";
 
                 if(rPlayer.IsPlayerLoaded && !(rPlayer.CorePlayer.Ping>0))
                 {
@@ -117,7 +119,7 @@ namespace rFrameworkServer
                 }
             }
             SQLQuery = SQLQuery.Substring(0, SQLQuery.Length - 2) + " ";
-            SQLQuery += "ON DUPLICATE KEY UPDATE bank = VALUES(bank), cash = VALUES(cash);";
+            SQLQuery += "ON DUPLICATE KEY UPDATE bank = VALUES(bank), cash = VALUES(cash), vehicles = VALUES(vehicles);";
 
             MySqlConnection SQLConnection = GetDBConnection();
             SQLConnection.Open();
@@ -128,6 +130,11 @@ namespace rFrameworkServer
             SQLConnection.Dispose();
 
             return;
+        }
+
+        public static void DatabaseAddVehicle(string VehicleUniqueID, string VehicleJSON)
+        {
+
         }
 
         public static byte[] GetFileHash(string fileName)
@@ -190,6 +197,11 @@ namespace rFrameworkServer
                 }
             });
             return IsWhitelist;
+        }
+
+        public static void DebugWrite(object DebugObject)
+        {
+            CitizenFX.Core.Debug.WriteLine(DebugPrefix + DebugObject.ToString() + DebugSuffix);
         }
     }
 }

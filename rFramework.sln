@@ -5,16 +5,6 @@ VisualStudioVersion = 16.0.29519.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "rDiscordBot", "rDiscordBot\rDiscordBot.csproj", "{FAA75B5C-235E-4B21-A210-4AFB33476E11}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rPlayerManager[Server]", "rPlayerManager[Server]\rPlayerManager[Server].csproj", "{2E62A9CB-97F3-4B26-A8E4-171316A400DB}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rPlayerManager[Client]", "rPlayerManager[Client]\rPlayerManager[Client].csproj", "{58F71BFC-7B52-4DE1-A118-4482388A4B36}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rConfig[Server]", "rConfig[Server]\rConfig[Server].csproj", "{EA46B154-0C31-4524-8843-6CBAA329ED81}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rConfig[Client]", "rConfig[Client]\rConfig[Client].csproj", "{86F388DF-3D39-4588-8435-FA701B68682C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rPickupManager[Server]", "rPickupManager[Server]\rPickupManager[Server].csproj", "{7B5BBBDB-257F-4E65-AB95-DE7A06C211F8}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rFrameworkServer", "rFrameworkServer\rFrameworkServer.csproj", "{22468248-F405-4A2C-9D86-9DB1C19E2EF6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rFrameworkClient", "rFrameworkClient\rFrameworkClient.csproj", "{A0E2EDDA-7315-46E7-A691-CA367C7873F7}"
@@ -29,26 +19,6 @@ Global
 		{FAA75B5C-235E-4B21-A210-4AFB33476E11}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAA75B5C-235E-4B21-A210-4AFB33476E11}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FAA75B5C-235E-4B21-A210-4AFB33476E11}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2E62A9CB-97F3-4B26-A8E4-171316A400DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2E62A9CB-97F3-4B26-A8E4-171316A400DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2E62A9CB-97F3-4B26-A8E4-171316A400DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2E62A9CB-97F3-4B26-A8E4-171316A400DB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{58F71BFC-7B52-4DE1-A118-4482388A4B36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{58F71BFC-7B52-4DE1-A118-4482388A4B36}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{58F71BFC-7B52-4DE1-A118-4482388A4B36}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{58F71BFC-7B52-4DE1-A118-4482388A4B36}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EA46B154-0C31-4524-8843-6CBAA329ED81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EA46B154-0C31-4524-8843-6CBAA329ED81}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EA46B154-0C31-4524-8843-6CBAA329ED81}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EA46B154-0C31-4524-8843-6CBAA329ED81}.Release|Any CPU.Build.0 = Release|Any CPU
-		{86F388DF-3D39-4588-8435-FA701B68682C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{86F388DF-3D39-4588-8435-FA701B68682C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{86F388DF-3D39-4588-8435-FA701B68682C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{86F388DF-3D39-4588-8435-FA701B68682C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7B5BBBDB-257F-4E65-AB95-DE7A06C211F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7B5BBBDB-257F-4E65-AB95-DE7A06C211F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7B5BBBDB-257F-4E65-AB95-DE7A06C211F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7B5BBBDB-257F-4E65-AB95-DE7A06C211F8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{22468248-F405-4A2C-9D86-9DB1C19E2EF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{22468248-F405-4A2C-9D86-9DB1C19E2EF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22468248-F405-4A2C-9D86-9DB1C19E2EF6}.Release|Any CPU.ActiveCfg = Release|Any CPU

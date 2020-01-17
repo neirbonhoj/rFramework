@@ -69,17 +69,21 @@
   <ItemGroup>
     <Compile Include="ConfigManager.cs" />
     <Compile Include="DiscordDatabase.cs" />
+    <Compile Include="MapManager.cs" />
     <Compile Include="PickupManager.cs" />
     <Compile Include="PlayerManager.cs" />
     <Compile Include="Functions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="rDealership.cs" />
     <Compile Include="rFrameworkPlayer.cs" />
+    <Compile Include="rVehicle.cs" />
+    <Compile Include="VehicleManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /d /y "$(ProjectDir)bin\Debug\rFrameworkServer.net.dll" "C:\Users\John\Documents\FiveM_Stuff\Server2.0\server-data\resources\rFramework"</PostBuildEvent>
+    <PostBuildEvent>xcopy /d /y "$(ProjectDir)bin\Debug\rFrameworkServer.net.dll" "C:\Users\John\Documents\FiveM_Stuff\CWRPServer\server-data\resources\rFramework"</PostBuildEvent>
   </PropertyGroup>
 </Project>

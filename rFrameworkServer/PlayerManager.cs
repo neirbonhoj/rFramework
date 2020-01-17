@@ -76,6 +76,8 @@ namespace rFrameworkServer
 
             rFrameworkPlayer rPlayer = new rFrameworkPlayer(player, PlayerDiscordID);
             rPlayer.IsPlayerLoaded = false;
+            //Account for player disconnected while connecting
+            ConnectingPlayers.Remove(PlayerDiscordID);
             ConnectingPlayers.Add(PlayerDiscordID, rPlayer);
 
             await InitializeDatabasePlayer(rPlayer);
@@ -109,14 +111,13 @@ namespace rFrameworkServer
                 //Fix rPlayer 
                 OnlinePlayers.Add(GetPlayerDiscordID(player), rPlayer);
                 ConnectingPlayers.Remove(PlayerDiscordID);
-
                 rPlayer.IsPlayerLoaded = true;
 
                 UpdateClientPermissions(player);
+                UpdatePlayerCash(rPlayer);
+                VehicleManager.UpdatePlayerVehicles(rPlayer);
 
                 TriggerClientEvent(player, "rFramework:AssignConfig", JsonConvert.SerializeObject(config));
-
-                UpdatePlayerCash(rPlayer);
             }
         }
 
@@ -175,6 +176,13 @@ namespace rFrameworkServer
         public static void DropPlayerFromDatabaseUpdates(rFrameworkPlayer rPlayer)
         {
             OnlinePlayers.Remove(rPlayer.DiscordID);
+        }
+
+        public static rFrameworkPlayer GetrFrameworkPlayer(Player player)
+        {
+            rFrameworkPlayer rPlayer = null;
+            OnlinePlayers.TryGetValue(GetPlayerDiscordID(player), out rPlayer);
+            return rPlayer;
         }
     }
 }

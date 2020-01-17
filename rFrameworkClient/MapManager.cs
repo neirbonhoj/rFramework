@@ -5,14 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using CitizenFX.Core;
 using static CitizenFX.Core.Native.API;
-using static rFrameworkClient.ConfigManager;
+using static rFrameworkClient.Functions;
 namespace rFrameworkClient
 {
-    public static class Functions
+    class MapManager : BaseScript
     {
-        public static void DebugWrite(object DebugObject)
+        public MapManager()
         {
-            CitizenFX.Core.Debug.WriteLine(DebugPrefix + DebugObject.ToString() + DebugSuffix);
+            
         }
     }
 }

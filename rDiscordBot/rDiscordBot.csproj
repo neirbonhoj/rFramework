@@ -11,11 +11,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\rConfig[Server]\rConfig[Server].csproj" />
+    <ProjectReference Include="..\rFrameworkServer\rFrameworkServer.csproj" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy /d /y &quot;$(ProjectDir)bin\Debug\netcoreapp3.1\*&quot; &quot;C:\Users\John\Documents\FiveM_Stuff\Server2.0\server-data\resources\rFramework\rDiscordBot&quot;" />
+    <Exec Command="xcopy /d /y &quot;$(ProjectDir)bin\Debug\netcoreapp3.1\*&quot; &quot;C:\Users\John\Documents\FiveM_Stuff\CWRPServer\server-data\resources\rFramework\rDiscordBot&quot;" />
   </Target>
 
 </Project>

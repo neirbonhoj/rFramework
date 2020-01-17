@@ -30,17 +30,5 @@ namespace rFrameworkServer
 
             DiscordRoleIDs = JsonConvert.DeserializeObject<Dictionary<string, ulong>>(config["DiscordRoleIDs"].ToString());
         }
-
-        public static byte[] GetFileHash(string fileName)
-        {
-            HashAlgorithm sha1 = HashAlgorithm.Create();
-            using (FileStream stream = new FileStream(fileName, FileMode.Open, FileAccess.Read))
-                return sha1.ComputeHash(stream);
-        }
-
-        public static void DebugWrite(string DebugMessage)
-        {
-            CitizenFX.Core.Debug.WriteLine(DebugPrefix + DebugMessage + DebugSuffix);
-        }
     }
 }

@@ -5,7 +5,7 @@ using System.IO;
 using System.Text;
 using Newtonsoft.Json;
 using Discord.WebSocket;
-using static rConfig_Server_.ConfigManager;
+using static rFrameworkServer.ConfigManager;
 namespace rDiscordBot
 {
     class Permissions

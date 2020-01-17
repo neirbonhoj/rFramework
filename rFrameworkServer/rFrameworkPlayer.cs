@@ -12,6 +12,7 @@ namespace rFrameworkServer
         public ulong DiscordID;
         public long BankBalance;
         public long CashBalance;
+        public string Vehicles;
         public bool IsPlayerLoaded;
 
         public rFrameworkPlayer(Player CorePlayer, ulong DiscordID)
@@ -20,6 +21,7 @@ namespace rFrameworkServer
             this.DiscordID = DiscordID;
             BankBalance = 0;
             CashBalance = 0;
+            Vehicles = "";
             IsPlayerLoaded = false;
         }
     }
