@@ -59,7 +59,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="rDealership.cs" />
     <Compile Include="rVehicle.cs" />
-    <Compile Include="ScaleformTesting.cs" />
+    <Compile Include="ATMManager.cs" />
     <Compile Include="VehicleManager.cs" />
   </ItemGroup>
   <ItemGroup>
