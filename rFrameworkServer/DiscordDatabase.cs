@@ -19,35 +19,38 @@ namespace rFrameworkServer
         {
             try
             {
-                byte[] NewHash = Functions.GetFileHash(PermissionFilePath);
-                if (!ExistingDiscordPermissionHash.SequenceEqual(NewHash))
+                if (File.ReadAllText(PermissionFilePath).Length > 0)
                 {
-                    string PermissionJson = System.IO.File.ReadAllText(PermissionFilePath);
-                    Dictionary<ulong, List<ulong>> DiscordRoles = JsonConvert.DeserializeObject<Dictionary<ulong, List<ulong>>>(PermissionJson);
-                    if (DiscordRoles == null)
+                    byte[] NewHash = GetFileHash(PermissionFilePath);
+                    if (!ExistingDiscordPermissionHash.SequenceEqual(NewHash))
                     {
-                        ExistingDiscordPermissionHash = NewHash;
-                        return;
+                        string PermissionJson = File.ReadAllText(PermissionFilePath);
+                        Dictionary<ulong, List<ulong>> DiscordRoles = JsonConvert.DeserializeObject<Dictionary<ulong, List<ulong>>>(PermissionJson);
+                        if (DiscordRoles == null)
+                        {
+                            ExistingDiscordPermissionHash = NewHash;
+                            return;
+                        }
+                        foreach (ulong PlayerDiscordID in DiscordRoles.Keys)
+                        {
+                            PlayerDiscordRoles[PlayerDiscordID] = DiscordRoles[PlayerDiscordID];
+                            Player UpdatedPlayer = GetPlayerFromDiscordID(PlayerDiscordID);
+                            if (UpdatedPlayer != null)
+                            {
+                                PlayerManager.UpdateClientPermissions(UpdatedPlayer);
+                            }
+                            if (GetPlayerFromDiscordID(PlayerDiscordID) != null)
+                            {
+                                DebugWrite("Updated Player Permissions for " + GetPlayerFromDiscordID(PlayerDiscordID).Name);
+                            }
+                            else
+                            {
+                                DebugWrite("Updated Player Permissions for " + PlayerDiscordID + "[DiscordID]");
+                            }
+                        }
+                        await WriteAsync("");
+                        ExistingDiscordPermissionHash = Functions.GetFileHash(PermissionFilePath);
                     }
-                    foreach (ulong PlayerDiscordID in DiscordRoles.Keys)
-                    {
-                        PlayerDiscordRoles[PlayerDiscordID] = DiscordRoles[PlayerDiscordID];
-                        Player UpdatedPlayer = GetPlayerFromDiscordID(PlayerDiscordID);
-                        if (UpdatedPlayer != null)
-                        {
-                            PlayerManager.UpdateClientPermissions(UpdatedPlayer);
-                        }
-                        if (GetPlayerFromDiscordID(PlayerDiscordID) != null)
-                        {
-                            DebugWrite("Updated Player Permissions for " + GetPlayerFromDiscordID(PlayerDiscordID).Name);
-                        }
-                        else
-                        {
-                            DebugWrite("Updated Player Permissions for " + PlayerDiscordID + "[DiscordID]");
-                        }
-                    }
-                    await WriteAsync("");
-                    ExistingDiscordPermissionHash = Functions.GetFileHash(PermissionFilePath);
                 }
             } catch(Exception e)
             {

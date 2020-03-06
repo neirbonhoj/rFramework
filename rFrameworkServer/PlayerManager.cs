@@ -100,7 +100,7 @@ namespace rFrameworkServer
             await Delay(5000);
         }
 
-        public async void PlayerSpawn([FromSource] Player player)
+        public void PlayerSpawn([FromSource] Player player)
         {
             ulong PlayerDiscordID = GetPlayerDiscordID(player);
             rFrameworkPlayer rPlayer;
@@ -162,6 +162,7 @@ namespace rFrameworkServer
                 deferrals.defer();
                 deferrals.update("Checking Whitelist...");
                 bool IsWhitelisted = await CheckWhitelist(rPlayer.DiscordID);
+                await Delay(0);
                 if (!IsWhitelisted)
                 {
                     deferrals.done("Not Discord Whitelisted");

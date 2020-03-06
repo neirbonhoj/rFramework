@@ -181,6 +181,11 @@ namespace rFrameworkServer
 
         public async static Task<bool> CheckWhitelist(ulong DiscordID)
         {
+            if (DiscordID == 0)
+            {
+                return false;
+            }
+
             bool IsWhitelist;
             IsWhitelist = await Task.Run(() =>
             {

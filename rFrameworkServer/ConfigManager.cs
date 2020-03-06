@@ -20,7 +20,7 @@ namespace rFrameworkServer
 
         public static string DebugPrefix = "^2[rFramework]^5";
         public static string DebugSuffix = "^0";
-
+        
         public static string ConfigPath = Path.Combine(Environment.CurrentDirectory, @"resources\rFramework\rConfig.json");
 
         public static void InitializeConfig()

@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CitizenFX.Core.Client, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -57,6 +59,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="rDealership.cs" />
     <Compile Include="rVehicle.cs" />
+    <Compile Include="ScaleformTesting.cs" />
     <Compile Include="VehicleManager.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -64,6 +67,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /d /y "$(ProjectDir)bin\Debug\rFrameworkClient.net.dll" "C:\Users\John\Documents\FiveM_Stuff\CWRPServer\server-data\resources\rFramework"</PostBuildEvent>
+    <PostBuildEvent>xcopy /d /y "$(ProjectDir)bin\Debug\rFrameworkClient.net.dll" "C:\Users\John\Documents\FiveM_Stuff\rServer\server-data\resources\rFramework"</PostBuildEvent>
   </PropertyGroup>
 </Project>
