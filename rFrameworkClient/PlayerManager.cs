@@ -14,6 +14,9 @@ namespace rFrameworkClient
     public class PlayerManager : BaseScript
     {
         public static Dictionary<ulong, int> Permissions = new Dictionary<ulong, int>();
+        private static long PlayerCash;
+        private static long PlayerBank;
+
         public PlayerManager()
         {
             DisplayCash(true);
@@ -49,13 +52,29 @@ namespace rFrameworkClient
 
         public static void UpdateMoney(long BankAmount, long CashAmount)
         {
+            PlayerCash = CashAmount;
+            PlayerBank = BankAmount;
             StatSetInt((uint)GetHashKey("BANK_BALANCE"), (int)BankAmount, true);
             StatSetInt((uint)GetHashKey("MP0_WALLET_BALANCE"), (int)CashAmount, true);
+            if (ATMManager.isUsingATM)
+            {
+                ATMManager.UpdateDisplayBalance();
+            }
         }
 
         public static void PlayerSpawn(dynamic spawnInfo)
         {
             TriggerServerEvent("rFramework:PlayerSpawn");
+        }
+
+        public static long GetPlayerCash()
+        {
+            return PlayerCash;
+        }
+
+        public static long GetPlayerBank()
+        {
+            return PlayerBank;
         }
     }
 }

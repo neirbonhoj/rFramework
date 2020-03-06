@@ -22,7 +22,6 @@ namespace rFrameworkServer
         {
             EventHandlers.Add("rFramework:PurchaseVehicle", new Action<Player, int>(PurchaseVehicle));
             EventHandlers.Add("rFramework:UpdateVehicle", new Action<Player, string>(UpdateVehicle));
-            EventHandlers.Add("plswritejson", new Action<Player, string>(writejson));
 
             Dealerships = JsonConvert.DeserializeObject<List<rDealership>>(config["Dealerships"].ToString());
             Vehicles = JsonConvert.DeserializeObject<Dictionary<int, rVehicle>>(config["Vehicles"].ToString());

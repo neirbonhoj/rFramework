@@ -112,11 +112,6 @@ namespace rFrameworkClient
             //    }
             //}), false);
 
-            RegisterCommand("kill", new Action<int, List<object>, string>((source, args, raw) =>
-            {
-                ApplyDamageToPed(PlayerPedId(), 1000, false);
-            }), false);
-
             EventHandlers.Add("gameEventTriggered", new Action<string, List<dynamic>>(OnGameEventTriggered));
             EventHandlers.Add("rFramework:CreatePickup", new Action<int, long, int>(DropPickup));
         }
@@ -124,8 +119,8 @@ namespace rFrameworkClient
         private async void DropPickup(int amount, long type, int fourDigitCode)
         {
             Vector3 PC = GetEntityCoords(Game.PlayerPed.Handle, true);
-            Vector3 PFV = GetEntityForwardVector(Game.PlayerPed.Handle) * 1.2f;
-            Vector3 SPC = GetSafePickupCoords(PC.X + PFV.X, PC.Y + PFV.Y, PC.Z + PFV.Z, 1, 1);
+            Vector3 PFV = GetEntityForwardVector(Game.PlayerPed.Handle) * 1.75f;
+            Vector3 SPC = GetSafePickupCoords(PC.X + PFV.X, PC.Y + PFV.Y, PC.Z /*+ PFV.Z*/, 1, 1);
 
             Prop PickupProp = null;
 

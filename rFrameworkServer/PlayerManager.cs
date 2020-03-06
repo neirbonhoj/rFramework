@@ -30,7 +30,7 @@ namespace rFrameworkServer
                 EventHandlers.Add("playerConnecting", new Action<Player, string, dynamic, dynamic>(PlayerConnecting));
                 EventHandlers.Add("playerDropped", new Action<Player, string>(PlayerDropped));
                 EventHandlers.Add("rFramework:PlayerSpawn", new Action<Player>(PlayerSpawn));
-                EventHandlers.Add("rFramework:ChangePlayerMoney", new Action<ulong, int, int>(ChangePlayerMoney));
+                EventHandlers.Add("rFramework:MoneyTransaction", new Action<Player, int, bool>(PlayerMoneyTransaction));
 
                 Tick += CheckForDiscordRoleChange;
                 Tick += UpdatePlayerDatabase;
@@ -57,6 +57,7 @@ namespace rFrameworkServer
 
                     UpdatePlayerCash(rPlayer);
                 }
+                DebugWrite("Setup Complete");
             }
         }
         
@@ -89,6 +90,9 @@ namespace rFrameworkServer
 
         public static void PlayerDropped([FromSource] Player player, string reason)
         {
+            DebugWrite("Player " + player.Name + " leaving - updating database");
+            DebugWrite("    Discord ID: " + GetPlayerDiscordID(player));
+            DatabaseUpdatePlayerMoney(new List<rFrameworkPlayer>() { new rFrameworkPlayer(player, GetPlayerDiscordID(player))});
         }
 
         public async Task UpdatePlayerDatabase()
@@ -97,7 +101,7 @@ namespace rFrameworkServer
             {
                 DatabaseUpdatePlayerMoney(OnlinePlayers.Values.ToList());
             }
-            await Delay(5000);
+            await Delay(1000);
         }
 
         public void PlayerSpawn([FromSource] Player player)
@@ -153,6 +157,29 @@ namespace rFrameworkServer
         public static void UpdatePlayerCash(rFrameworkPlayer rPlayer)
         {
             TriggerClientEvent(rPlayer.CorePlayer, "rFramework:UpdateMoney", rPlayer.BankBalance, rPlayer.CashBalance);
+        }
+
+        public static void PlayerMoneyTransaction([FromSource] Player player, int amount, bool isWithdrawal)
+        {
+            rFrameworkPlayer rPlayer = GetrFrameworkPlayer(player);
+            amount = Math.Abs(amount);
+
+            //Determine if transaction is a withdrawal (amount less than zero) or deposit (amount greater than zero)
+            if (isWithdrawal)
+            {
+                if(rPlayer.BankBalance - amount >= 0)
+                {
+                    //Transaction allowed
+                    ChangePlayerMoney(rPlayer, -amount, amount);
+                    DebugWrite("Player " + player.Name + " withdrew ^2$" + Math.Abs(amount));
+                } else
+                {
+                    //Transaction invalid
+                }
+            } else
+            {
+
+            }
         }
 
         public async Task HandlePlayerWhitelist(rFrameworkPlayer rPlayer, dynamic deferrals)

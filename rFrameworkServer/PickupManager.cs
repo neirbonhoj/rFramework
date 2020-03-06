@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using static CitizenFX.Core.Native.API;
-
+using static rFrameworkServer.Functions;
 namespace rFrameworkServer
 {
     public class PickupManager : BaseScript
@@ -32,8 +32,7 @@ namespace rFrameworkServer
         private void CanPlayerDropMoney([FromSource] Player player, int moneyAmount, long moneyType, int fourDigitCode)
         {
             rFrameworkPlayer rPlayer;
-            PlayerManager.GetOnlinePlayers().TryGetValue(Functions.GetPlayerDiscordID(player), out rPlayer);
-
+            PlayerManager.GetOnlinePlayers().TryGetValue(GetPlayerDiscordID(player), out rPlayer);
 
             if (rPlayer != null)
             {
@@ -43,6 +42,7 @@ namespace rFrameworkServer
                     PlayerManager.ChangePlayerMoney(rPlayer, 0, -moneyAmount);
                     PlayerManager.UpdatePlayerCash(rPlayer);
                     TriggerClientEvent(player, "rFramework:CreatePickup", moneyAmount, moneyType, fourDigitCode);
+                    DebugWrite("Player " + player.Name + " has dropped ^1$" + moneyAmount);
                 }
             }
         }
@@ -57,6 +57,7 @@ namespace rFrameworkServer
                     //parameter 3 is bank amt, 4 is cash amount
                     PlayerManager.ChangePlayerMoney(rPlayer, 0, Amount);
                     MoneyPickups.Remove(Pickup);
+                    DebugWrite("Player " + player.Name + " has picked up ^4$" + Amount);
                     break;
                 }
             }
@@ -71,6 +72,7 @@ namespace rFrameworkServer
                 {
                     PlayerManager.ChangePlayerMoney(rPlayer, 0, Amount);
                     CasePickups.Remove(Pickup);
+                    DebugWrite("Player " + player.Name + " has picked up ^2$" + Amount);
                     break;
                 }
             }

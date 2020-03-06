@@ -117,6 +117,8 @@ namespace rFrameworkServer
                 {
                     PlayerManager.DropPlayerFromDatabaseUpdates(rPlayer);
                 }
+
+                PlayerManager.UpdatePlayerCash(rPlayer);
             }
             SQLQuery = SQLQuery.Substring(0, SQLQuery.Length - 2) + " ";
             SQLQuery += "ON DUPLICATE KEY UPDATE bank = VALUES(bank), cash = VALUES(cash), vehicles = VALUES(vehicles);";
