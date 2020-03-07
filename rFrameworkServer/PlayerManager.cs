@@ -57,7 +57,6 @@ namespace rFrameworkServer
 
                     UpdatePlayerCash(rPlayer);
                 }
-                DebugWrite("Setup Complete");
             }
         }
         
@@ -92,7 +91,11 @@ namespace rFrameworkServer
         {
             DebugWrite("Player " + player.Name + " leaving - updating database");
             DebugWrite("    Discord ID: " + GetPlayerDiscordID(player));
-            DatabaseUpdatePlayerMoney(new List<rFrameworkPlayer>() { new rFrameworkPlayer(player, GetPlayerDiscordID(player))});
+            rFrameworkPlayer rPlayer = new rFrameworkPlayer(player, GetPlayerDiscordID(player));
+            if(!(rPlayer.BankBalance == 0 && rPlayer.CashBalance == 0))
+            {
+                DatabaseUpdatePlayerMoney(new List<rFrameworkPlayer>() { rPlayer });
+            }
         }
 
         public async Task UpdatePlayerDatabase()
@@ -172,13 +175,24 @@ namespace rFrameworkServer
                     //Transaction allowed
                     ChangePlayerMoney(rPlayer, -amount, amount);
                     DebugWrite("Player " + player.Name + " withdrew ^2$" + Math.Abs(amount));
+                    TriggerClientEvent(player, "rFramework:ATMTransactionSuccess");
                 } else
                 {
                     //Transaction invalid
                 }
             } else
             {
-
+                if (rPlayer.CashBalance - amount >= 0)
+                {
+                    //Transaction allowed
+                    ChangePlayerMoney(rPlayer, amount, -amount);
+                    DebugWrite("Player " + player.Name + " deposited ^1$" + Math.Abs(amount));
+                    TriggerClientEvent(player, "rFramework:ATMTransactionSuccess");
+                }
+                else
+                {
+                    //Transaction invalid
+                }
             }
         }
 

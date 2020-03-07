@@ -13,24 +13,29 @@ namespace rFrameworkClient
     class ATMManager : BaseScript
     {
         private static Scaleform scaleform;
-        private static Scaleform moneyHudScaleform;
 
         private readonly string scaleformID = "ATM";
-        private readonly string moneyHudScaleformID = "hud_cash";
 
         public static bool isUsingATM = false;
+
+        private static bool latestTransactionIsWithdrawal = false;
+        private static int latestTransactionAmount = 0;
+
+        private static Dictionary<int, int> buttonParams;
 
         private readonly int[] ATMObjectHashes = new int[]
         {
             -1126237515, -1364697528, 506770882
         };
 
-        private int currentScreen;
+        private static int currentScreen;
 
         private bool awaitingResult = false;
         private int returnScaleform;
         public ATMManager()
         {
+            EventHandlers.Add("rFramework:ATMTransactionSuccess", new Action(OpenTransactionComplete));
+
             Tick += CheckIfATMNearby;
         }
 
@@ -49,19 +54,19 @@ namespace rFrameworkClient
                     ShowHudComponentThisFrame(3);
                     ShowHudComponentThisFrame(4);
 
-                    if (IsControlJustPressed(0, 51))
+                    if (IsControlPressed(0, 51) && !isUsingATM)
                     {
                         LoadATMScaleform();
                         isUsingATM = true;
                     }
                 }
             }
+            await Delay(0);
         }
 
         private async void LoadATMScaleform()
         {
             scaleform = await LoadScaleform(scaleformID);
-            moneyHudScaleform = await LoadScaleform(moneyHudScaleformID);
             if (scaleform != null)
             {
                 HandleMouseSelection(0);
@@ -141,31 +146,67 @@ namespace rFrameworkClient
 
         private void HandleMouseSelection(int selection)
         {
-            switch (selection)
+            if (currentScreen == 0)
             {
-                case 0:
-                    OpenMenuScreen();
-                    break;
-                case 1:
-                    if (currentScreen == 0)
-                    {
+                switch (selection)
+                {
+                    case 1:
                         OpenWithdrawalScreen();
-                    } else if(currentScreen == 1)
-                    {
-                        TriggerServerEvent("rFramework:MoneyTransaction", 50, true);
-                    }
-                    break;
-                case 2:
-                    if(currentScreen == 0)
-                    {
+                        break;
+                    case 2:
                         OpenDepositScreen();
-                    }
-                    break;
-                case 3:
-                    break;
-                case 4:
-                    OpenMenuScreen();
-                    break;
+                        break;
+                    case 4:
+                        CloseATM();
+                        break;
+                    default:
+                        OpenMenuScreen();
+                        break;
+                }
+            } else if (currentScreen == 1 || currentScreen == 2)
+            {
+                switch (selection)
+                {
+                    case 4:
+                        OpenMenuScreen();
+                        break;
+                    default:
+                        DepositWithdrawalButtonHandle(buttonParams[selection]);
+                        break;
+                }
+            } else if(currentScreen == 3)
+            {
+                switch (selection)
+                {
+                    case 1:
+                        OpenTransactionPending();
+                        TriggerServerEvent("rFramework:MoneyTransaction", latestTransactionAmount, latestTransactionIsWithdrawal);
+                        break;
+                    case 2:
+                        OpenWithdrawalScreen();
+                        break;
+                }
+            } else if (currentScreen == 5)
+            {
+                OpenMenuScreen();
+            }
+        }
+
+        private static void DepositWithdrawalButtonHandle(int cashAmount)
+        {
+            if (currentScreen == 1)
+            {
+                OpenConfirmationScreen(true, cashAmount);
+                latestTransactionAmount = cashAmount;
+            }
+            else if (currentScreen == 2)
+            {
+                OpenConfirmationScreen(false, cashAmount);
+                latestTransactionAmount = cashAmount;
+            }
+            else if (currentScreen == 5)
+            {
+                OpenMenuScreen();
             }
         }
 
@@ -185,7 +226,7 @@ namespace rFrameworkClient
             Tick -= ATMTick;
         }
 
-        private void OpenMenuScreen()
+        private static void OpenMenuScreen()
         {
             currentScreen = 0;
 
@@ -194,6 +235,7 @@ namespace rFrameworkClient
             scaleform.CallFunction("SET_DATA_SLOT", 1, "Withdraw");
             scaleform.CallFunction("SET_DATA_SLOT", 2, "Deposit");
             scaleform.CallFunction("SET_DATA_SLOT", 3, "Transaction Log");
+            scaleform.CallFunction("SET_DATA_SLOT", 4, "Exit");
             UpdateDisplayBalance();
             scaleform.CallFunction("DISPLAY_MENU");
         }
@@ -204,32 +246,175 @@ namespace rFrameworkClient
 
             scaleform.CallFunction("SET_DATA_SLOT_EMPTY");
             scaleform.CallFunction("SET_DATA_SLOT", 0, "Select the amount you wish to withdraw from this account.");
-            scaleform.CallFunction("SET_DATA_SLOT", 1, "$50");
-            scaleform.CallFunction("SET_DATA_SLOT", 2, "$500");
-            scaleform.CallFunction("SET_DATA_SLOT", 3, "$2,500");
-            scaleform.CallFunction("SET_DATA_SLOT", 4, "Back");
-            scaleform.CallFunction("SET_DATA_SLOT", 5, "$10,000");
-            scaleform.CallFunction("SET_DATA_SLOT", 6, "$100,000");
-            scaleform.CallFunction("SET_DATA_SLOT", 7, "$0");
+
+            int amount = (int)PlayerManager.GetPlayerCash();
+            SetupATMMoneyButtons(amount);
+
             UpdateDisplayBalance();
             scaleform.CallFunction("DISPLAY_CASH_OPTIONS");
+
+            latestTransactionIsWithdrawal = true;
         }
 
         private void OpenDepositScreen()
         {
             currentScreen = 2;
 
+
             scaleform.CallFunction("SET_DATA_SLOT_EMPTY");
             scaleform.CallFunction("SET_DATA_SLOT", 0, "Select the amount you wish to deposit into this account.");
-            scaleform.CallFunction("SET_DATA_SLOT", 1, "$50");
-            scaleform.CallFunction("SET_DATA_SLOT", 2, "$500");
-            scaleform.CallFunction("SET_DATA_SLOT", 3, "$2,500");
-            scaleform.CallFunction("SET_DATA_SLOT", 4, "Back");
-            scaleform.CallFunction("SET_DATA_SLOT", 5, "$10,000");
-            scaleform.CallFunction("SET_DATA_SLOT", 6, "$100,000");
-            scaleform.CallFunction("SET_DATA_SLOT", 7, "$0");
+
+            int amount = (int)PlayerManager.GetPlayerCash();
+            SetupATMMoneyButtons(amount);
+           
             UpdateDisplayBalance();
             scaleform.CallFunction("DISPLAY_CASH_OPTIONS");
+
+            latestTransactionIsWithdrawal = false;
+        }
+
+        private static void SetupATMMoneyButtons(int amount)
+        {
+            if (amount >= 100000)
+            {
+                buttonParams = new Dictionary<int, int>()
+                {
+                    {1, 50 },
+                    {2, 500 },
+                    {3, 2500 },
+                    {5, 10000 },
+                    {6, 100000 },
+                    {7, amount },
+                };
+                scaleform.CallFunction("SET_DATA_SLOT", 1, "$50");
+                scaleform.CallFunction("SET_DATA_SLOT", 2, "$500");
+                scaleform.CallFunction("SET_DATA_SLOT", 3, "$2,500");
+                scaleform.CallFunction("SET_DATA_SLOT", 4, "Back");
+                scaleform.CallFunction("SET_DATA_SLOT", 5, "$10,000");
+                scaleform.CallFunction("SET_DATA_SLOT", 6, "$100,000");
+                if (buttonParams.Values.Contains<int>(amount))
+                {
+                    scaleform.CallFunction("SET_DATA_SLOT", 7, "$" + String.Format("{0:n0}", Math.Abs(amount)));
+                }
+            }
+            else if (amount >= 10000)
+            {
+                buttonParams = new Dictionary<int, int>()
+                {
+                    {1, 50 },
+                    {2, 500 },
+                    {3, 2500 },
+                    {5, 10000 },
+                    {6, amount },
+                };
+                scaleform.CallFunction("SET_DATA_SLOT", 1, "$50");
+                scaleform.CallFunction("SET_DATA_SLOT", 2, "$500");
+                scaleform.CallFunction("SET_DATA_SLOT", 3, "$2,500");
+                scaleform.CallFunction("SET_DATA_SLOT", 4, "Back");
+                scaleform.CallFunction("SET_DATA_SLOT", 5, "$10,000");
+                if (buttonParams.Values.Contains<int>(amount))
+                {
+                    scaleform.CallFunction("SET_DATA_SLOT", 6, "$" + String.Format("{0:n0}", Math.Abs(amount)));
+                }
+            }
+            else if (amount >= 2500)
+            {
+                buttonParams = new Dictionary<int, int>()
+                {
+                    {1, 50 },
+                    {2, 500 },
+                    {3, 2500 },
+                    {5, amount },
+                };
+                scaleform.CallFunction("SET_DATA_SLOT", 1, "$50");
+                scaleform.CallFunction("SET_DATA_SLOT", 2, "$500");
+                scaleform.CallFunction("SET_DATA_SLOT", 3, "$2,500");
+                scaleform.CallFunction("SET_DATA_SLOT", 4, "Back");
+                if (buttonParams.Values.Contains<int>(amount))
+                {
+                    scaleform.CallFunction("SET_DATA_SLOT", 5, "$" + String.Format("{0:n0}", Math.Abs(amount)));
+                }
+            }
+            else if (amount >= 500)
+            {
+                buttonParams = new Dictionary<int, int>()
+                {
+                    {1, 50 },
+                    {2, 500 },
+                    {3, amount },
+                };
+                scaleform.CallFunction("SET_DATA_SLOT", 1, "$50");
+                scaleform.CallFunction("SET_DATA_SLOT", 2, "$500");
+                scaleform.CallFunction("SET_DATA_SLOT", 4, "Back");
+                if (buttonParams.Values.Contains<int>(amount))
+                {
+                    scaleform.CallFunction("SET_DATA_SLOT", 3, "$" + String.Format("{0:n0}", Math.Abs(amount)));
+                }
+            }
+            else if (amount >= 50)
+            {
+                buttonParams = new Dictionary<int, int>()
+                {
+                    {1, 50 },
+                    {2, amount },
+                };
+                scaleform.CallFunction("SET_DATA_SLOT", 1, "$50");
+                scaleform.CallFunction("SET_DATA_SLOT", 4, "Back");
+                if (buttonParams.Values.Contains<int>(amount))
+                {
+                    scaleform.CallFunction("SET_DATA_SLOT", 2, "$" + String.Format("{0:n0}", Math.Abs(amount)));
+                }
+            }
+            else
+            {
+                buttonParams = new Dictionary<int, int>()
+                {
+                    {1, amount }
+                };
+                scaleform.CallFunction("SET_DATA_SLOT", 4, "Back");
+                if (buttonParams.Values.Contains<int>(amount))
+                {
+                    scaleform.CallFunction("SET_DATA_SLOT", 1, "$" + String.Format("{0:n0}", Math.Abs(amount)));
+                }
+            }
+        }
+
+        private static void OpenConfirmationScreen(bool isWithdrawal, int amount)
+        {
+            currentScreen = 3;
+
+            scaleform.CallFunction("SET_DATA_SLOT_EMPTY");
+            if (isWithdrawal)
+            {
+                scaleform.CallFunction("SET_DATA_SLOT", 0, "Do you wish to withdraw $" + String.Format("{0:n0}", Math.Abs(amount)) + " from your account?");
+            } else
+            {
+                scaleform.CallFunction("SET_DATA_SLOT", 0, "Do you wish to deposit $" + String.Format("{0:n0}", Math.Abs(amount)) + " into your account?");
+            }
+            scaleform.CallFunction("SET_DATA_SLOT", 1, "Yes");
+            scaleform.CallFunction("SET_DATA_SLOT", 2, "No");
+            UpdateDisplayBalance();
+            scaleform.CallFunction("DISPLAY_MESSAGE");
+        }
+
+        private void OpenTransactionPending()
+        {
+            currentScreen = 4;
+
+            scaleform.CallFunction("SET_DATA_SLOT_EMPTY");
+            scaleform.CallFunction("SET_DATA_SLOT", 0, "Transaction Pending");
+            scaleform.CallFunction("DISPLAY_MESSAGE");
+        }
+
+        private void OpenTransactionComplete()
+        {
+            currentScreen = 5;
+
+            scaleform.CallFunction("SET_DATA_SLOT_EMPTY");
+            scaleform.CallFunction("SET_DATA_SLOT", 0, "Transaction Complete");
+            scaleform.CallFunction("SET_DATA_SLOT", 1, "Back");
+            UpdateDisplayBalance();
+            scaleform.CallFunction("DISPLAY_MESSAGE");
         }
 
         private async Task<Scaleform> LoadScaleform(string id)
