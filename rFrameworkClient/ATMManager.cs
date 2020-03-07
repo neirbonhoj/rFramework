@@ -56,6 +56,7 @@ namespace rFrameworkClient
 
                     if (IsControlPressed(0, 51) && !isUsingATM)
                     {
+                        scaleform = null;
                         LoadATMScaleform();
                         isUsingATM = true;
                     }
@@ -183,7 +184,13 @@ namespace rFrameworkClient
                         TriggerServerEvent("rFramework:MoneyTransaction", latestTransactionAmount, latestTransactionIsWithdrawal);
                         break;
                     case 2:
-                        OpenWithdrawalScreen();
+                        if (latestTransactionIsWithdrawal)
+                        {
+                            OpenWithdrawalScreen();
+                        } else
+                        {
+                            OpenDepositScreen();
+                        }
                         break;
                 }
             } else if (currentScreen == 5)
@@ -247,7 +254,7 @@ namespace rFrameworkClient
             scaleform.CallFunction("SET_DATA_SLOT_EMPTY");
             scaleform.CallFunction("SET_DATA_SLOT", 0, "Select the amount you wish to withdraw from this account.");
 
-            int amount = (int)PlayerManager.GetPlayerCash();
+            int amount = (int)PlayerManager.GetPlayerBank();
             SetupATMMoneyButtons(amount);
 
             UpdateDisplayBalance();
@@ -283,8 +290,7 @@ namespace rFrameworkClient
                     {2, 500 },
                     {3, 2500 },
                     {5, 10000 },
-                    {6, 100000 },
-                    {7, amount },
+                    {6, 100000 }
                 };
                 scaleform.CallFunction("SET_DATA_SLOT", 1, "$50");
                 scaleform.CallFunction("SET_DATA_SLOT", 2, "$500");
@@ -292,9 +298,10 @@ namespace rFrameworkClient
                 scaleform.CallFunction("SET_DATA_SLOT", 4, "Back");
                 scaleform.CallFunction("SET_DATA_SLOT", 5, "$10,000");
                 scaleform.CallFunction("SET_DATA_SLOT", 6, "$100,000");
-                if (buttonParams.Values.Contains<int>(amount))
+                if (!buttonParams.Values.Contains<int>(amount))
                 {
                     scaleform.CallFunction("SET_DATA_SLOT", 7, "$" + String.Format("{0:n0}", Math.Abs(amount)));
+                    buttonParams.Add(7, amount);
                 }
             }
             else if (amount >= 10000)
@@ -304,17 +311,17 @@ namespace rFrameworkClient
                     {1, 50 },
                     {2, 500 },
                     {3, 2500 },
-                    {5, 10000 },
-                    {6, amount },
+                    {5, 10000 }
                 };
                 scaleform.CallFunction("SET_DATA_SLOT", 1, "$50");
                 scaleform.CallFunction("SET_DATA_SLOT", 2, "$500");
                 scaleform.CallFunction("SET_DATA_SLOT", 3, "$2,500");
                 scaleform.CallFunction("SET_DATA_SLOT", 4, "Back");
                 scaleform.CallFunction("SET_DATA_SLOT", 5, "$10,000");
-                if (buttonParams.Values.Contains<int>(amount))
+                if (!buttonParams.Values.Contains<int>(amount))
                 {
                     scaleform.CallFunction("SET_DATA_SLOT", 6, "$" + String.Format("{0:n0}", Math.Abs(amount)));
+                    buttonParams.Add(6, amount);
                 }
             }
             else if (amount >= 2500)
@@ -323,16 +330,16 @@ namespace rFrameworkClient
                 {
                     {1, 50 },
                     {2, 500 },
-                    {3, 2500 },
-                    {5, amount },
+                    {3, 2500 }
                 };
                 scaleform.CallFunction("SET_DATA_SLOT", 1, "$50");
                 scaleform.CallFunction("SET_DATA_SLOT", 2, "$500");
                 scaleform.CallFunction("SET_DATA_SLOT", 3, "$2,500");
                 scaleform.CallFunction("SET_DATA_SLOT", 4, "Back");
-                if (buttonParams.Values.Contains<int>(amount))
+                if (!buttonParams.Values.Contains<int>(amount))
                 {
                     scaleform.CallFunction("SET_DATA_SLOT", 5, "$" + String.Format("{0:n0}", Math.Abs(amount)));
+                    buttonParams.Add(5, amount);
                 }
             }
             else if (amount >= 500)
@@ -340,41 +347,40 @@ namespace rFrameworkClient
                 buttonParams = new Dictionary<int, int>()
                 {
                     {1, 50 },
-                    {2, 500 },
-                    {3, amount },
+                    {2, 500 }
                 };
                 scaleform.CallFunction("SET_DATA_SLOT", 1, "$50");
                 scaleform.CallFunction("SET_DATA_SLOT", 2, "$500");
                 scaleform.CallFunction("SET_DATA_SLOT", 4, "Back");
-                if (buttonParams.Values.Contains<int>(amount))
+                if (!buttonParams.Values.Contains<int>(amount))
                 {
                     scaleform.CallFunction("SET_DATA_SLOT", 3, "$" + String.Format("{0:n0}", Math.Abs(amount)));
+                    buttonParams.Add(3, amount);
                 }
             }
             else if (amount >= 50)
             {
                 buttonParams = new Dictionary<int, int>()
                 {
-                    {1, 50 },
-                    {2, amount },
+                    {1, 50 }
                 };
                 scaleform.CallFunction("SET_DATA_SLOT", 1, "$50");
                 scaleform.CallFunction("SET_DATA_SLOT", 4, "Back");
-                if (buttonParams.Values.Contains<int>(amount))
+                if (!buttonParams.Values.Contains<int>(amount))
                 {
                     scaleform.CallFunction("SET_DATA_SLOT", 2, "$" + String.Format("{0:n0}", Math.Abs(amount)));
+                    buttonParams.Add(2, amount);
                 }
             }
             else
             {
                 buttonParams = new Dictionary<int, int>()
-                {
-                    {1, amount }
-                };
+                {};
                 scaleform.CallFunction("SET_DATA_SLOT", 4, "Back");
-                if (buttonParams.Values.Contains<int>(amount))
+                if (!buttonParams.Values.Contains<int>(amount))
                 {
                     scaleform.CallFunction("SET_DATA_SLOT", 1, "$" + String.Format("{0:n0}", Math.Abs(amount)));
+                    buttonParams.Add(1, amount);
                 }
             }
         }
