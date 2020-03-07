@@ -56,6 +56,7 @@ namespace rFrameworkServer
                     TriggerClientEvent(player, "rFramework:AssignConfig", JsonConvert.SerializeObject(config));
 
                     UpdatePlayerCash(rPlayer);
+                    UpdatePlayerTransactions(rPlayer);
                 }
             }
         }
@@ -94,7 +95,7 @@ namespace rFrameworkServer
             rFrameworkPlayer rPlayer = new rFrameworkPlayer(player, GetPlayerDiscordID(player));
             if(!(rPlayer.BankBalance == 0 && rPlayer.CashBalance == 0))
             {
-                DatabaseUpdatePlayerMoney(new List<rFrameworkPlayer>() { rPlayer });
+                DatabaseUpdatePlayer(new List<rFrameworkPlayer>() { rPlayer });
             }
         }
 
@@ -102,7 +103,7 @@ namespace rFrameworkServer
         {
             if (OnlinePlayers.Values.Count > 0)
             {
-                DatabaseUpdatePlayerMoney(OnlinePlayers.Values.ToList());
+                DatabaseUpdatePlayer(OnlinePlayers.Values.ToList());
             }
             await Delay(1000);
         }
@@ -162,6 +163,11 @@ namespace rFrameworkServer
             TriggerClientEvent(rPlayer.CorePlayer, "rFramework:UpdateMoney", rPlayer.BankBalance, rPlayer.CashBalance);
         }
 
+        public static void UpdatePlayerTransactions(rFrameworkPlayer rPlayer)
+        {
+            TriggerClientEvent(rPlayer.CorePlayer, "rFramework:UpdateTransactions", JsonConvert.SerializeObject(rPlayer.Transfers));
+        }
+
         public static void PlayerMoneyTransaction([FromSource] Player player, int amount, bool isWithdrawal)
         {
             rFrameworkPlayer rPlayer = GetrFrameworkPlayer(player);
@@ -176,6 +182,11 @@ namespace rFrameworkServer
                     ChangePlayerMoney(rPlayer, -amount, amount);
                     DebugWrite("Player " + player.Name + " withdrew ^2$" + Math.Abs(amount));
                     TriggerClientEvent(player, "rFramework:ATMTransactionSuccess");
+
+                    rBankTransfer transfer = new rBankTransfer("", rPlayer.DiscordID, player.Name, "Cash Withdrawn", false, true, amount, DateTime.Now);
+                    rPlayer.Transfers.Add(transfer);
+                    DatabaseUpdateTransaction(transfer);
+                    UpdatePlayerTransactions(rPlayer);
                 } else
                 {
                     //Transaction invalid
@@ -188,6 +199,11 @@ namespace rFrameworkServer
                     ChangePlayerMoney(rPlayer, amount, -amount);
                     DebugWrite("Player " + player.Name + " deposited ^1$" + Math.Abs(amount));
                     TriggerClientEvent(player, "rFramework:ATMTransactionSuccess");
+
+                    rBankTransfer transfer = new rBankTransfer("", rPlayer.DiscordID, player.Name, "Cash Deposited", false, false, amount, DateTime.Now);
+                    rPlayer.Transfers.Add(transfer);
+                    DatabaseUpdateTransaction(transfer);
+                    UpdatePlayerTransactions(rPlayer);
                 }
                 else
                 {

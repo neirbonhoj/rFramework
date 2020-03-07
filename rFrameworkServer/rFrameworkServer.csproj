@@ -74,6 +74,7 @@
     <Compile Include="PlayerManager.cs" />
     <Compile Include="Functions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="rBankTransfer.cs" />
     <Compile Include="rDealership.cs" />
     <Compile Include="rFrameworkPlayer.cs" />
     <Compile Include="rVehicle.cs" />

@@ -22,6 +22,7 @@ namespace rFrameworkClient
             DisplayCash(true);
 
             EventHandlers.Add("rFramework:UpdateMoney", new Action<long, long>(UpdateMoney));
+            EventHandlers.Add("rFramework:UpdateTransactions", new Action<string>(UpdateTransactions));
             EventHandlers.Add("rFramework:Permissions", new Action<string>(ReceivePermissions));
             EventHandlers.Add("playerSpawned", new Action<dynamic>(PlayerSpawn));
 
@@ -60,6 +61,12 @@ namespace rFrameworkClient
             {
                 ATMManager.UpdateDisplayBalance();
             }
+        }
+
+        public static void UpdateTransactions(string transfersJson)
+        {
+            List<rBankTransfer> transactions = JsonConvert.DeserializeObject<List<rBankTransfer>>(transfersJson);
+            ATMManager.transactions = transactions;
         }
 
         public static void PlayerSpawn(dynamic spawnInfo)

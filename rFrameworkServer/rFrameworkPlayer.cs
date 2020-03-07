@@ -14,6 +14,7 @@ namespace rFrameworkServer
         public long CashBalance;
         public string Vehicles;
         public bool IsPlayerLoaded;
+        public List<rBankTransfer> Transfers;
 
         public rFrameworkPlayer(Player CorePlayer, ulong DiscordID)
         {
@@ -23,6 +24,7 @@ namespace rFrameworkServer
             CashBalance = 0;
             Vehicles = "";
             IsPlayerLoaded = false;
+            Transfers = new List<rBankTransfer>();
         }
     }
 }

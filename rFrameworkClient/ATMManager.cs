@@ -23,6 +23,8 @@ namespace rFrameworkClient
 
         private static Dictionary<int, int> buttonParams;
 
+        public static List<rBankTransfer> transactions;
+
         private readonly int[] ATMObjectHashes = new int[]
         {
             -1126237515, -1364697528, 506770882
@@ -110,6 +112,12 @@ namespace rFrameworkClient
             } else if(IsDisabledControlJustPressed(0, (int)Control.FrontendCancel))
             {
                 CloseATM();
+            } else if(IsDisabledControlJustPressed(0, (int)Control.WeaponWheelNext))
+            {
+                scaleform.CallFunction("SCROLL_PAGE", -40);
+            } else if(IsDisabledControlJustPressed(0, (int)Control.WeaponWheelPrev))
+            {
+                scaleform.CallFunction("SCROLL_PAGE", 40);
             }
 
             if (awaitingResult)
@@ -123,7 +131,7 @@ namespace rFrameworkClient
                 }
             }
 
-            //Controller use
+            //Controller
             if (IsDisabledControlJustPressed(0, 27))
             {
                 scaleform.CallFunction("SET_INPUT_EVENT", 8);
@@ -147,15 +155,32 @@ namespace rFrameworkClient
 
         private void HandleMouseSelection(int selection)
         {
+            scaleform.CallFunction("SET_INPUT_SELECT");
             if (currentScreen == 0)
             {
                 switch (selection)
                 {
                     case 1:
-                        OpenWithdrawalScreen();
+                        if (PlayerManager.GetPlayerBank() > 0)
+                        {
+                            OpenWithdrawalScreen();
+                        }
+                        else
+                        {
+                            DisplayATMError("You have insufficient funds to make a withdrawal.");
+                        }
                         break;
                     case 2:
-                        OpenDepositScreen();
+                        if (PlayerManager.GetPlayerCash() > 0)
+                        {
+                            OpenDepositScreen();
+                        } else
+                        {
+                            DisplayATMError("You have insufficient cash to make a deposit.");
+                        }
+                        break;
+                    case 3:
+                        OpenTransactionsScreen();
                         break;
                     case 4:
                         CloseATM();
@@ -196,6 +221,14 @@ namespace rFrameworkClient
             } else if (currentScreen == 5)
             {
                 OpenMenuScreen();
+            } else if(currentScreen == 6)
+            {
+                switch (selection)
+                {
+                    case 1:
+                        OpenMenuScreen();
+                        break;
+                }
             }
         }
 
@@ -233,6 +266,17 @@ namespace rFrameworkClient
             Tick -= ATMTick;
         }
 
+        private static void DisplayATMError(string error)
+        {
+            currentScreen = 5;
+
+            scaleform.CallFunction("SET_DATA_SLOT_EMPTY");
+            scaleform.CallFunction("SET_DATA_SLOT", 0, error);
+            scaleform.CallFunction("SET_DATA_SLOT", 1, "Back");
+            UpdateDisplayBalance();
+            scaleform.CallFunction("DISPLAY_MESSAGE");
+        }
+
         private static void OpenMenuScreen()
         {
             currentScreen = 0;
@@ -267,7 +311,6 @@ namespace rFrameworkClient
         {
             currentScreen = 2;
 
-
             scaleform.CallFunction("SET_DATA_SLOT_EMPTY");
             scaleform.CallFunction("SET_DATA_SLOT", 0, "Select the amount you wish to deposit into this account.");
 
@@ -278,6 +321,26 @@ namespace rFrameworkClient
             scaleform.CallFunction("DISPLAY_CASH_OPTIONS");
 
             latestTransactionIsWithdrawal = false;
+        }
+
+        private void OpenTransactionsScreen()
+        {
+            currentScreen = 6;
+
+            scaleform.CallFunction("SET_DATA_SLOT_EMPTY");
+            scaleform.CallFunction("SET_DATA_SLOT", 0, "Transaction Log");
+            scaleform.CallFunction("SET_DATA_SLOT", 1, "Back");
+            if (transactions != null)
+            {
+                int i = transactions.Count+1;
+                foreach (rBankTransfer transaction in transactions)
+                {
+                    scaleform.CallFunction("SET_DATA_SLOT", i, (transaction.isWithdrawal) ? 0 : 1, transaction.amount, transaction.reason+" "+transaction.time.ToShortDateString());
+                    i--;
+                }
+            }
+            UpdateDisplayBalance();
+            scaleform.CallFunction("DISPLAY_TRANSACTIONS");
         }
 
         private static void SetupATMMoneyButtons(int amount)

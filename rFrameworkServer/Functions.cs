@@ -81,7 +81,7 @@ namespace rFrameworkServer
             MySqlConnection SQLConnection = GetDBConnection();
             await SQLConnection.OpenAsync();
             MySqlCommand SQLCommand = new MySqlCommand(SQLQuery, SQLConnection);
-            MySqlDataReader SQLDataReader = (MySqlDataReader)(await SQLCommand.ExecuteReaderAsync());
+            MySqlDataReader SQLDataReader = (MySqlDataReader)await SQLCommand.ExecuteReaderAsync();
             if (!SQLDataReader.Read())
             {
                 SQLQuery = "INSERT INTO `users` (discordID, name) VALUES ('" + rPlayer.DiscordID + "', '" + rPlayer.CorePlayer.Name + "')";
@@ -98,6 +98,26 @@ namespace rFrameworkServer
                 rPlayer.BankBalance = SQLDataReader.GetInt64(2);
                 rPlayer.CashBalance = SQLDataReader.GetInt64(3);
                 rPlayer.Vehicles = SQLDataReader.GetString(4);
+
+                SQLCommand.Dispose();
+                SQLDataReader.Dispose();
+
+                //Get transactions
+                SQLQuery = "SELECT * FROM `transactions` WHERE `player_discordid` = " + rPlayer.DiscordID;
+                SQLCommand = new MySqlCommand(SQLQuery, SQLConnection);
+                SQLDataReader = (MySqlDataReader)await SQLCommand.ExecuteReaderAsync();
+
+                List<rBankTransfer> transactions = new List<rBankTransfer>();
+
+                while(SQLDataReader.Read())
+                {
+                    rBankTransfer transaction = new rBankTransfer(SQLDataReader.GetString(2), (ulong)SQLDataReader.GetInt64(0), 
+                        SQLDataReader.GetString(1), SQLDataReader.GetString(3), (SQLDataReader.GetString(2)!=null) ? false : true, 
+                        (SQLDataReader.GetString(3).Equals("Cash Withdrawn")) ? true : false, (int)SQLDataReader.GetInt64(4), DateTime.Parse(SQLDataReader.GetString(5)));
+                    transactions.Add(transaction);
+                }
+
+                rPlayer.Transfers = transactions;
             }
 
             SQLCommand.Dispose();
@@ -106,7 +126,7 @@ namespace rFrameworkServer
             return;
         }
 
-        public static void DatabaseUpdatePlayerMoney(List<rFrameworkPlayer> players)
+        public static void DatabaseUpdatePlayer(List<rFrameworkPlayer> players)
         {
             string SQLQuery = "INSERT INTO users (discordID, bank, cash, vehicles) VALUES ";
             foreach (rFrameworkPlayer rPlayer in players)
@@ -119,9 +139,28 @@ namespace rFrameworkServer
                 }
 
                 PlayerManager.UpdatePlayerCash(rPlayer);
+                PlayerManager.UpdatePlayerTransactions(rPlayer);
             }
             SQLQuery = SQLQuery.Substring(0, SQLQuery.Length - 2) + " ";
             SQLQuery += "ON DUPLICATE KEY UPDATE bank = VALUES(bank), cash = VALUES(cash), vehicles = VALUES(vehicles);";
+
+            MySqlConnection SQLConnection = GetDBConnection();
+            SQLConnection.Open();
+            MySqlCommand SQLCommand = new MySqlCommand(SQLQuery, SQLConnection);
+            SQLCommand.ExecuteNonQuery();
+
+            SQLCommand.Dispose();
+            SQLConnection.Dispose();
+
+            return;
+        }
+
+        public static void DatabaseUpdateTransaction(rBankTransfer transfer)
+        {
+            string SQLQuery = "INSERT INTO transactions (player_discordid, player_name, sender_name, reason, amount, time) VALUES ";
+
+            SQLQuery += "(" + transfer.recipientDiscordID + ", '" + transfer.recipientName 
+                + "', '" + transfer.senderName + "', '" + transfer.reason + "', '"+transfer.amount+"', '"+transfer.time+"')";
 
             MySqlConnection SQLConnection = GetDBConnection();
             SQLConnection.Open();
