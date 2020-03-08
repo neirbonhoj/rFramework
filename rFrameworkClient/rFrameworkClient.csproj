@@ -68,6 +68,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /d /y "$(ProjectDir)bin\Debug\rFrameworkClient.net.dll" "C:\Users\John\Documents\FiveM_Stuff\rServer\server-data\resources\rFramework"</PostBuildEvent>
+    <PostBuildEvent>xcopy /d /y "$(ProjectDir)bin\Debug\rFrameworkClient.net.dll" "C:\Users\John\Documents\FiveMStuff\rServer\server-data\resources\rFramework"</PostBuildEvent>
   </PropertyGroup>
 </Project>

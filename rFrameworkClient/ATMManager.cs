@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,28 +44,26 @@ namespace rFrameworkClient
 
         private async Task CheckIfATMNearby()
         {
-            Vector3 pos = Game.PlayerPed.Position;
-            foreach(int ATMObjectHash in ATMObjectHashes)
+            if (!isUsingATM)
             {
-                if(IsObjectNearPoint((uint)ATMObjectHash, pos.X, pos.Y, pos.Z, 2))
+                Vector3 pos = Game.PlayerPed.Position;
+                foreach (int ATMObjectHash in ATMObjectHashes)
                 {
-                    SetTextComponentFormat("STRING");
-                    AddTextComponentString("Press ~INPUT_CONTEXT~ to access the ATM.");
-                    DisplayHelpTextFromStringLabel(0, false, true, -1);
-
-                    //Show HUD Money
-                    ShowHudComponentThisFrame(3);
-                    ShowHudComponentThisFrame(4);
-
-                    if (IsControlPressed(0, 51) && !isUsingATM)
+                    if (IsObjectNearPoint((uint)ATMObjectHash, pos.X, pos.Y, pos.Z, 2))
                     {
-                        scaleform = null;
-                        LoadATMScaleform();
-                        isUsingATM = true;
+                        SetTextComponentFormat("STRING");
+                        AddTextComponentString("Press ~INPUT_CONTEXT~ to access the ATM.");
+                        DisplayHelpTextFromStringLabel(0, false, true, -1);
+
+                        if (IsControlPressed(0, 51) && !isUsingATM)
+                        {
+                            scaleform = null;
+                            LoadATMScaleform();
+                            isUsingATM = true;
+                        }
                     }
                 }
             }
-            await Delay(0);
         }
 
         private async void LoadATMScaleform()
