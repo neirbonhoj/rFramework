@@ -75,6 +75,12 @@ namespace rFrameworkServer
         {
             ulong PlayerDiscordID = GetPlayerDiscordID(player);
 
+            if (PlayerDiscordID == null)
+            {
+                player.Drop("No Discord account found.");
+                return;
+            }
+
             rFrameworkPlayer rPlayer = new rFrameworkPlayer(player, PlayerDiscordID);
             rPlayer.IsPlayerLoaded = false;
             //Account for player disconnected while connecting

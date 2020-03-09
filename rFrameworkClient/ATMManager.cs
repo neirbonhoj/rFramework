@@ -49,11 +49,14 @@ namespace rFrameworkClient
                 Vector3 pos = Game.PlayerPed.Position;
                 foreach (int ATMObjectHash in ATMObjectHashes)
                 {
-                    if (IsObjectNearPoint((uint)ATMObjectHash, pos.X, pos.Y, pos.Z, 2))
+                    if (IsObjectNearPoint((uint)ATMObjectHash, pos.X, pos.Y, pos.Z, 2) && !IsPedInAnyVehicle(Game.PlayerPed.Handle, true))
                     {
                         SetTextComponentFormat("STRING");
                         AddTextComponentString("Press ~INPUT_CONTEXT~ to access the ATM.");
                         DisplayHelpTextFromStringLabel(0, false, true, -1);
+
+                        ShowHudComponentThisFrame(3);
+                        ShowHudComponentThisFrame(4);
 
                         if (IsControlPressed(0, 51) && !isUsingATM)
                         {
@@ -64,6 +67,7 @@ namespace rFrameworkClient
                     }
                 }
             }
+            await Delay(0);
         }
 
         private async void LoadATMScaleform()
