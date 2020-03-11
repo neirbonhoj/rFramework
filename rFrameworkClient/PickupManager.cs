@@ -13,9 +13,9 @@ namespace rFrameworkClient
     class PickupManager : BaseScript
     {
         private static readonly Model CashModel = new Model("PICKUP_MONEY_VARIABLE");
-        private static readonly long CashPickup = 4263048111; //PickupType.MoneyVariable
+        private static readonly long CashPickup = (long)PickupType.MoneyVariable; //PickupType.MoneyVariable
         private static readonly Model CaseModel = new Model("PICKUP_MONEY_SECURITY_CASE");
-        private static readonly long CasePickup = 3732468094; //PickupType.MoneySecurityCase
+        private static readonly long CasePickup = (long)PickupType.MoneySecurityCase; //PickupType.MoneySecurityCase
         private static readonly Model CasePropModel = new Model("prop_security_case_01");
         private static List<Prop> ActivePickups = new List<Prop>();
 
@@ -72,51 +72,11 @@ namespace rFrameworkClient
                 }
             }), false);
 
-            //RegisterCommand("dropmoneycase", new Action<int, List<object>, string>((source, args, raw) =>
-            //{
-            //    int MaxPickups;
-            //    try
-            //    {
-            //        MaxPickups = int.Parse(config["MaxPickupCount"].ToString());
-            //    }
-            //    catch (Exception e)
-            //    {
-            //        MaxPickups = 3;
-            //    }
-            //    if (ActivePickups.Count < MaxPickups)
-            //    {
-            //        TriggerServerEvent("rFramework:VerifyDropMoney", int.Parse(args[0].ToString()), CasePickup, 1234);
-            //    }
-            //    else
-            //    {
-            //        bool removed = false;
-            //        foreach (Prop p in ActivePickups)
-            //        {
-            //            if (!p.Exists())
-            //            {
-            //                ActivePickups.Remove(p);
-            //                removed = true;
-            //                break;
-            //            }
-            //        }
-            //        if (removed)
-            //        {
-            //            TriggerServerEvent("rFramework:VerifyDropMoney", int.Parse(args[0].ToString()), CasePickup, 1234);
-            //        }
-            //        else
-            //        {
-            //            SetNotificationTextEntry("STRING");
-            //            AddTextComponentString("Max Pickup Count Met");
-            //            DrawNotification(true, false);
-            //        }
-            //    }
-            //}), false);
-
             EventHandlers.Add("gameEventTriggered", new Action<string, List<dynamic>>(OnGameEventTriggered));
-            EventHandlers.Add("rFramework:CreatePickup", new Action<int, long, int>(DropPickup));
+            EventHandlers.Add("rFramework:CreatePickup", new Action<int, long, Guid>(DropPickup));
         }
 
-        private async void DropPickup(int amount, long type, int fourDigitCode)
+        private async void DropPickup(int amount, long type, Guid secureClientGuid)
         {
             Vector3 PC = GetEntityCoords(Game.PlayerPed.Handle, true);
             Vector3 PFV = GetEntityForwardVector(Game.PlayerPed.Handle) * 1.75f;
@@ -127,11 +87,10 @@ namespace rFrameworkClient
             if (type == CashPickup)
             {
                 PickupProp = await CreateAmbientPickup(PickupType.MoneyVariable, SPC, CashModel, amount);
-                TriggerServerEvent("rFramework:CreateMoneyPickup", PickupProp.NetworkId, amount);
             } else if(type == CasePickup)
             {
                 PickupProp = await CreateAmbientPickup(PickupType.MoneySecurityCase, SPC, CaseModel, amount);
-                TriggerServerEvent("rFramework:CreateCasePickup", PickupProp.NetworkId, amount, fourDigitCode);
+                TriggerServerEvent("rFramework:CreateCasePickup", PickupProp.NetworkId, amount, secureClientGuid);
             }
             ActivePickups.Add(PickupProp);
             SetEntityAsMissionEntity(PickupProp.Handle, true, true);

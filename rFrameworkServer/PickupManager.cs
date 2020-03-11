@@ -9,13 +9,17 @@ namespace rFrameworkServer
     {
         private static Dictionary<int, List<object>> MoneyPickups = new Dictionary<int, List<object>>();
         private static Dictionary<int, List<object>> CasePickups = new Dictionary<int, List<object>>();
+
+        //Used to verify events sent from the client
+        private static List<Guid> ClientGuids = new List<Guid>();
+
         public PickupManager()
         {
             EventHandlers.Add("rFramework:CreateMoneyPickup", new Action<Player, int, int>(CreateMoneyPickup));
-            EventHandlers.Add("rFramework:CreateCasePickup", new Action<Player, int, int, int>(CreateCasePickup));
+            EventHandlers.Add("rFramework:CreateCasePickup", new Action<Player, int, int>(CreateCasePickup));
             EventHandlers.Add("rFramework:PickupCash", new Action<Player, int>(PlayerPickupCash));
             EventHandlers.Add("rFramework:PickupCase", new Action<Player, int, int>(PlayerOpenCase));
-            EventHandlers.Add("rFramework:VerifyDropMoney", new Action<Player, int, long, int>(CanPlayerDropMoney));
+            EventHandlers.Add("rFramework:VerifyDropMoney", new Action<Player, int, long>(CanPlayerDropMoney));
         }
 
         private static void CreateMoneyPickup([FromSource] Player player, int PickupNetworkID, int Amount)
@@ -24,12 +28,12 @@ namespace rFrameworkServer
             MoneyPickups.Add(PickupNetworkID, new List<object>() { "MoneyDrop", Amount });
         }
 
-        private static void CreateCasePickup([FromSource] Player player, int PickupNetworkID, int Amount, int FourDigitCode)
+        private static void CreateCasePickup([FromSource] Player player, int PickupNetworkID, int Amount)
         {
-            CasePickups.Add(PickupNetworkID, new List<object>() { "MoneyDrop", Amount, FourDigitCode });
+            CasePickups.Add(PickupNetworkID, new List<object>() { "MoneyDrop", Amount });
         }
 
-        private void CanPlayerDropMoney([FromSource] Player player, int moneyAmount, long moneyType, int fourDigitCode)
+        private void CanPlayerDropMoney([FromSource] Player player, int moneyAmount, long moneyType)
         {
             rFrameworkPlayer rPlayer;
             PlayerManager.GetOnlinePlayers().TryGetValue(GetPlayerDiscordID(player), out rPlayer);
@@ -41,8 +45,13 @@ namespace rFrameworkServer
                 {
                     PlayerManager.ChangePlayerMoney(rPlayer, 0, -moneyAmount);
                     PlayerManager.UpdatePlayerCash(rPlayer);
-                    TriggerClientEvent(player, "rFramework:CreatePickup", moneyAmount, moneyType, fourDigitCode);
+
+                    Guid secureClientGuid = new Guid();
+
+                    TriggerClientEvent(player, "rFramework:CreatePickup", moneyAmount, moneyType, secureClientGuid);
                     DebugWrite("Player " + player.Name + " has dropped ^1$" + moneyAmount);
+
+                    ClientGuids.Add(secureClientGuid);
                 }
             }
         }
