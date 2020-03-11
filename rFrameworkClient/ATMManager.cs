@@ -53,8 +53,7 @@ namespace rFrameworkClient
                 Vector3 pos = Game.PlayerPed.Position;
                 foreach (int ATMObjectHash in ATMObjectHashes)
                 {
-                    Prop o = new Prop(GetClosestObjectOfType(pos.X, pos.Y, pos.Z, 1f, (uint)ATMObjectHash, false, true, true));
-                    if (o != null && !IsPedInAnyVehicle(Game.PlayerPed.Handle, true) && o.IsOnScreen)
+                    if (GetClosestObjectOfType(pos.X, pos.Y, pos.Z, 1.5f, (uint)ATMObjectHash, false, false, false) != 0 && !IsPedInAnyVehicle(Game.PlayerPed.Handle, true))
                     {
                         SetTextComponentFormat("STRING");
                         AddTextComponentString("Press ~INPUT_CONTEXT~ to access the ATM.");
@@ -65,6 +64,8 @@ namespace rFrameworkClient
 
                         if (IsControlPressed(0, 51) && !isUsingATM)
                         {
+                            Prop o = new Prop(GetClosestObjectOfType(pos.X, pos.Y, pos.Z, 2f, (uint)ATMObjectHash, false, true, true));
+
                             scaleform = null;
                             isUsingATM = true;
 
