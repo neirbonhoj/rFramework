@@ -35,11 +35,15 @@ namespace rFrameworkClient
 
         private bool awaitingResult = false;
         private int returnScaleform;
+
+        private static bool playingAnim = false;
         public ATMManager()
         {
             EventHandlers.Add("rFramework:ATMTransactionSuccess", new Action(OpenTransactionComplete));
 
             Tick += CheckIfATMNearby;
+
+            ClearPedTasks(Game.PlayerPed.Handle);
         }
 
         private async Task CheckIfATMNearby()
@@ -49,7 +53,8 @@ namespace rFrameworkClient
                 Vector3 pos = Game.PlayerPed.Position;
                 foreach (int ATMObjectHash in ATMObjectHashes)
                 {
-                    if (IsObjectNearPoint((uint)ATMObjectHash, pos.X, pos.Y, pos.Z, 2) && !IsPedInAnyVehicle(Game.PlayerPed.Handle, true))
+                    Prop o = new Prop(GetClosestObjectOfType(pos.X, pos.Y, pos.Z, 1f, (uint)ATMObjectHash, false, true, true));
+                    if (o != null && !IsPedInAnyVehicle(Game.PlayerPed.Handle, true) && o.IsOnScreen)
                     {
                         SetTextComponentFormat("STRING");
                         AddTextComponentString("Press ~INPUT_CONTEXT~ to access the ATM.");
@@ -61,13 +66,32 @@ namespace rFrameworkClient
                         if (IsControlPressed(0, 51) && !isUsingATM)
                         {
                             scaleform = null;
-                            LoadATMScaleform();
                             isUsingATM = true;
+
+                            ClearPedTasks(Game.PlayerPed.Handle);
+                            TaskGoStraightToCoord(Game.PlayerPed.Handle, o.Position.X - o.ForwardVector.X / 1.75f, o.Position.Y - o.ForwardVector.Y / 1.75f, pos.Z, 0.1f, 2000, o.Heading, 0);
+                            WaitForATMAnim();
+
+                            //ATM Anims are buggy still
                         }
                     }
                 }
             }
             await Delay(0);
+        }
+
+        private async Task WaitForATMAnim()
+        {
+            await Delay(200);
+
+            while (Game.PlayerPed.Velocity.Length()>0 || Game.PlayerPed.RotationVelocity.Length() > 0)
+            {
+                await Delay(0);
+            }
+
+            playAnim("amb@prop_human_atm@male@idle_a", "idle_b", -1, 8.0f, 1);
+
+            LoadATMScaleform();
         }
 
         private async void LoadATMScaleform()
@@ -267,6 +291,8 @@ namespace rFrameworkClient
             SetScaleformMovieAsNoLongerNeeded(ref scaleformHandle);
             scaleform = null;
             Tick -= ATMTick;
+
+            ClearPedTasks(Game.PlayerPed.Handle);
         }
 
         private static void DisplayATMError(string error)
@@ -499,6 +525,24 @@ namespace rFrameworkClient
                 await Delay(0);
             }
             return scaleform;
+        }
+
+        public async static void playAnim(string dict, string name, int duration, float leadIn, int flag)
+        {
+            while (!HasAnimDictLoaded(dict))
+            {
+                RequestAnimDict(dict);
+                await Delay(0);
+            }
+            TaskPlayAnim(Game.PlayerPed.Handle, dict, name, leadIn, 1.0f, duration, flag, 0, false, false, true);
+
+            playingAnim = true;
+
+            float waitTime = GetAnimDuration(dict, name);
+
+            await Delay((int)waitTime);
+
+            playingAnim = false;
         }
     }
 }

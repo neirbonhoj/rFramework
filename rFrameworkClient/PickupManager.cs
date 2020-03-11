@@ -135,16 +135,6 @@ namespace rFrameworkClient
             return int.Parse(o.ToString());
         }
 
-        public async static Task LoadModel(Model model)
-        {
-            RequestModel((uint)model.Hash);
-            while (!model.IsLoaded)
-            {
-                await Delay(2);
-            }
-            return;
-        }
-
         public async static void playAnim(string dict, string name, int duration, float leadIn)
         {
             while (!HasAnimDictLoaded(dict))
