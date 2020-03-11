@@ -15,22 +15,41 @@ namespace rFrameworkServer
 
         public PickupManager()
         {
-            EventHandlers.Add("rFramework:CreateMoneyPickup", new Action<Player, int, int>(CreateMoneyPickup));
-            EventHandlers.Add("rFramework:CreateCasePickup", new Action<Player, int, int>(CreateCasePickup));
+            EventHandlers.Add("rFramework:RegisterMoneyPickup", new Action<Player, int, int, string>(RegisterMoneyPickup));
+            EventHandlers.Add("rFramework:RegisterCasePickup", new Action<Player, int, int, string>(RegisterCasePickup));
             EventHandlers.Add("rFramework:PickupCash", new Action<Player, int>(PlayerPickupCash));
             EventHandlers.Add("rFramework:PickupCase", new Action<Player, int, int>(PlayerOpenCase));
             EventHandlers.Add("rFramework:VerifyDropMoney", new Action<Player, int, long>(CanPlayerDropMoney));
         }
 
-        private static void CreateMoneyPickup([FromSource] Player player, int PickupNetworkID, int Amount)
+        private static void RegisterMoneyPickup([FromSource] Player player, int PickupNetworkID, int Amount, string guid)
         {
-            //DebugWrite("Creating Pickup | ID[" + PickupNetworkID + "] Amount[" + Amount + "]");
-            MoneyPickups.Add(PickupNetworkID, new List<object>() { "MoneyDrop", Amount });
+            Guid clientGuid = Guid.Parse(guid);
+            if (ClientGuids.Contains(clientGuid))
+            {
+                DebugWrite("Registering Pickup | ID[" + PickupNetworkID + "] Amount[" + Amount + "]");
+                MoneyPickups.Add(PickupNetworkID, new List<object>() { "MoneyDrop", Amount });
+                ClientGuids.Remove(clientGuid);
+            } else
+            {
+                player.Drop("Unauthorized client event");
+                DebugWrite("Kicking player: " + player.Name + " | Discord ID: " + GetPlayerDiscordID(player) + " for an unauthorized client event");
+            }
         }
 
-        private static void CreateCasePickup([FromSource] Player player, int PickupNetworkID, int Amount)
+        private static void RegisterCasePickup([FromSource] Player player, int PickupNetworkID, int Amount, string guid)
         {
-            CasePickups.Add(PickupNetworkID, new List<object>() { "MoneyDrop", Amount });
+            Guid clientGuid = Guid.Parse(guid);
+            if (ClientGuids.Contains(clientGuid))
+            {
+                DebugWrite("Registering Pickup | ID[" + PickupNetworkID + "] Amount[" + Amount + "]");
+                CasePickups.Add(PickupNetworkID, new List<object>() { "MoneyDrop", Amount });
+                ClientGuids.Remove(clientGuid);
+            } else
+            {
+                player.Drop("Unauthorized client event");
+                DebugWrite("Kicking player: " + player.Name + " | Discord ID: " + GetPlayerDiscordID(player) + " for an unauthorized client event");
+            }
         }
 
         private void CanPlayerDropMoney([FromSource] Player player, int moneyAmount, long moneyType)
@@ -46,11 +65,11 @@ namespace rFrameworkServer
                     PlayerManager.ChangePlayerMoney(rPlayer, 0, -moneyAmount);
                     PlayerManager.UpdatePlayerCash(rPlayer);
 
-                    Guid secureClientGuid = new Guid();
+                    Guid secureClientGuid = Guid.NewGuid();
 
-                    TriggerClientEvent(player, "rFramework:CreatePickup", moneyAmount, moneyType, secureClientGuid);
+                    TriggerClientEvent(player, "rFramework:CreatePickup", moneyAmount, moneyType, secureClientGuid.ToString());
                     DebugWrite("Player " + player.Name + " has dropped ^1$" + moneyAmount);
-
+                    DebugWrite("Generated GUID " + secureClientGuid);
                     ClientGuids.Add(secureClientGuid);
                 }
             }
@@ -61,6 +80,9 @@ namespace rFrameworkServer
             rFrameworkPlayer rPlayer = PlayerManager.GetOnlinePlayers()[Functions.GetPlayerDiscordID(player)];
             foreach (int Pickup in MoneyPickups.Keys)
             {
+                //if the entity no longer exists, it was the one picked up
+                //this is not 100% secure. a better solution must be found
+                //although cheating money through this would prove very difficult without the server code...
                 if (!DoesEntityExist(Pickup))
                 {
                     //parameter 3 is bank amt, 4 is cash amount

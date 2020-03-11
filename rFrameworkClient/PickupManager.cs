@@ -73,24 +73,25 @@ namespace rFrameworkClient
             }), false);
 
             EventHandlers.Add("gameEventTriggered", new Action<string, List<dynamic>>(OnGameEventTriggered));
-            EventHandlers.Add("rFramework:CreatePickup", new Action<int, long, Guid>(DropPickup));
+            EventHandlers.Add("rFramework:CreatePickup", new Action<int, long, string>(DropPickup));
         }
 
-        private async void DropPickup(int amount, long type, Guid secureClientGuid)
+        private async void DropPickup(int amount, long type, string secureClientGuid)
         {
             Vector3 PC = GetEntityCoords(Game.PlayerPed.Handle, true);
             Vector3 PFV = GetEntityForwardVector(Game.PlayerPed.Handle) * 1.75f;
-            Vector3 SPC = GetSafePickupCoords(PC.X + PFV.X, PC.Y + PFV.Y, PC.Z /*+ PFV.Z*/, 1, 1);
+            Vector3 SPC = GetSafePickupCoords(PC.X + PFV.X, PC.Y + PFV.Y, PC.Z, 1, 1);
 
             Prop PickupProp = null;
 
             if (type == CashPickup)
             {
                 PickupProp = await CreateAmbientPickup(PickupType.MoneyVariable, SPC, CashModel, amount);
+                TriggerServerEvent("rFramework:RegisterMoneyPickup", PickupProp.NetworkId, amount, secureClientGuid);
             } else if(type == CasePickup)
             {
                 PickupProp = await CreateAmbientPickup(PickupType.MoneySecurityCase, SPC, CaseModel, amount);
-                TriggerServerEvent("rFramework:CreateCasePickup", PickupProp.NetworkId, amount, secureClientGuid);
+                TriggerServerEvent("rFramework:RegisterCasePickup", PickupProp.NetworkId, amount, secureClientGuid);
             }
             ActivePickups.Add(PickupProp);
             SetEntityAsMissionEntity(PickupProp.Handle, true, true);

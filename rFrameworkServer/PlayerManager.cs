@@ -75,7 +75,7 @@ namespace rFrameworkServer
         {
             ulong PlayerDiscordID = GetPlayerDiscordID(player);
 
-            if (PlayerDiscordID == null)
+            if (PlayerDiscordID == null || PlayerDiscordID == 0)
             {
                 player.Drop("No Discord account found.");
                 return;

@@ -202,6 +202,11 @@ namespace rFrameworkServer
         {
             try
             {
+                if (player.Identifiers["discord"] == null)
+                {
+                    player.Drop("Discord ID Not Found - try opening Discord and restarting FiveM.");
+                    return 0;
+                }
                 ulong DiscordID = ulong.Parse(player.Identifiers["discord"]);
                 return DiscordID;
             } catch(Exception e)
