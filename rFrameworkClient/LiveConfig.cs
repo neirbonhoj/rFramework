@@ -7,11 +7,11 @@ using CitizenFX.Core;
 using Newtonsoft.Json;
 namespace rFrameworkClient
 {
-    class LiveConfig : BaseScript
+    class LiveConfig
     {
         public LiveConfig()
         {
-            EventHandlers.Add("rFramework:AssignConfig", new Action<string>(AssignConfig));
+            //EventHandlers.Add("rFramework:AssignConfig", new Action<string>(AssignConfig));
         }
 
         public static void AssignConfig(string ConfigJson)

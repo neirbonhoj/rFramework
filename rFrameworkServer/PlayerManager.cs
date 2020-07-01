@@ -16,9 +16,10 @@ namespace rFrameworkServer
     public class PlayerManager : BaseScript
     {
         private static bool IsSetupComplete = false;
+        public static bool UsingDiscordIntegration = false;
 
-        private static Dictionary<ulong, rFrameworkPlayer> OnlinePlayers;
-        private static Dictionary<ulong, rFrameworkPlayer> ConnectingPlayers;
+        private static Dictionary<String, rFrameworkPlayer> OnlinePlayers;
+        private static Dictionary<String, rFrameworkPlayer> ConnectingPlayers;
         public PlayerManager()
         {
             if (!IsSetupComplete)
@@ -26,27 +27,41 @@ namespace rFrameworkServer
                 InitializeConfig();
 
                 //StartDiscordBotProcess();
+                object ConfigUseDiscordIntegration;
+                config.TryGetValue("DiscordIntegration", out ConfigUseDiscordIntegration);
 
                 EventHandlers.Add("playerConnecting", new Action<Player, string, dynamic, dynamic>(PlayerConnecting));
                 EventHandlers.Add("playerDropped", new Action<Player, string>(PlayerDropped));
                 EventHandlers.Add("rFramework:PlayerSpawn", new Action<Player>(PlayerSpawn));
                 EventHandlers.Add("rFramework:MoneyTransaction", new Action<Player, int, bool>(PlayerMoneyTransaction));
 
-                Tick += CheckForDiscordRoleChange;
-                Tick += UpdatePlayerDatabase;
+                if (ConfigUseDiscordIntegration.ToString().ToLower().Equals("true"))
+                {
+                    UsingDiscordIntegration = true;
+                }
 
-                OnlinePlayers = new Dictionary<ulong, rFrameworkPlayer>();
-                ConnectingPlayers = new Dictionary<ulong, rFrameworkPlayer>();
+                OnlinePlayers = new Dictionary<String, rFrameworkPlayer>();
+                ConnectingPlayers = new Dictionary<String, rFrameworkPlayer>();
 
                 IsSetupComplete = true;
 
                 foreach(Player player in Players)
                 {
-                    ulong PlayerDiscordID = GetPlayerDiscordID(player);
+                    ulong PlayerDiscordID;
+                    if (UsingDiscordIntegration)
+                    {
+                        PlayerDiscordID = GetPlayerDiscordID(player);
+                    } else
+                    {
+                        PlayerDiscordID = 0;
 
-                    rFrameworkPlayer rPlayer = new rFrameworkPlayer(player, PlayerDiscordID);
+                    }
 
-                    OnlinePlayers.Add(PlayerDiscordID, rPlayer);
+                    String PlayerSteamID = GetPlayerSteamID(player);
+
+                    rFrameworkPlayer rPlayer = new rFrameworkPlayer(player, PlayerDiscordID, PlayerSteamID);
+
+                    OnlinePlayers.Add(PlayerSteamID, rPlayer);
                     InitializeDatabasePlayer(rPlayer);
 
                     //Fix rPlayer 
@@ -58,6 +73,12 @@ namespace rFrameworkServer
                     UpdatePlayerCash(rPlayer);
                     UpdatePlayerTransactions(rPlayer);
                 }
+
+                if (UsingDiscordIntegration)
+                {
+                    Tick += CheckForDiscordRoleChange;
+                }
+                Tick += UpdatePlayerDatabase;
             }
         }
         
@@ -66,26 +87,31 @@ namespace rFrameworkServer
             return Players;
         }
 
-        public static Dictionary<ulong, rFrameworkPlayer> GetOnlinePlayers()
+        public static Dictionary<String, rFrameworkPlayer> GetOnlinePlayers()
         {
             return OnlinePlayers;
         }
 
         public async void PlayerConnecting([FromSource] Player player, string playerName, dynamic setKickReason, dynamic deferrals)
         {
-            ulong PlayerDiscordID = GetPlayerDiscordID(player);
-
-            if (PlayerDiscordID == null || PlayerDiscordID == 0)
+            ulong PlayerDiscordID;
+            if (UsingDiscordIntegration)
             {
-                player.Drop("No Discord account found.");
-                return;
+                PlayerDiscordID = GetPlayerDiscordID(player);
+            }
+            else
+            {
+                PlayerDiscordID = 0;
+
             }
 
-            rFrameworkPlayer rPlayer = new rFrameworkPlayer(player, PlayerDiscordID);
+            String PlayerSteamID = GetPlayerSteamID(player);
+
+            rFrameworkPlayer rPlayer = new rFrameworkPlayer(player, PlayerDiscordID, PlayerSteamID);
             rPlayer.IsPlayerLoaded = false;
             //Account for player disconnected while connecting
-            ConnectingPlayers.Remove(PlayerDiscordID);
-            ConnectingPlayers.Add(PlayerDiscordID, rPlayer);
+            ConnectingPlayers.Remove(PlayerSteamID);
+            ConnectingPlayers.Add(PlayerSteamID, rPlayer);
 
             await InitializeDatabasePlayer(rPlayer);
 
@@ -97,12 +123,11 @@ namespace rFrameworkServer
         public static void PlayerDropped([FromSource] Player player, string reason)
         {
             DebugWrite("Player " + player.Name + " leaving - updating database");
-            DebugWrite("    Discord ID: " + GetPlayerDiscordID(player));
-            rFrameworkPlayer rPlayer = new rFrameworkPlayer(player, GetPlayerDiscordID(player));
-            if(!(rPlayer.BankBalance == 0 && rPlayer.CashBalance == 0))
-            {
-                DatabaseUpdatePlayer(new List<rFrameworkPlayer>() { rPlayer });
-            }
+            DebugWrite("    Steam ID: " + GetPlayerSteamID(player));
+            rFrameworkPlayer rPlayer = new rFrameworkPlayer(player, GetPlayerDiscordID(player), GetPlayerSteamID(player));
+            OnlinePlayers.Remove(rPlayer.SteamID);
+
+            //DatabaseUpdatePlayer(new List<rFrameworkPlayer>() { rPlayer });
         }
 
         public async Task UpdatePlayerDatabase()
@@ -116,15 +141,15 @@ namespace rFrameworkServer
 
         public void PlayerSpawn([FromSource] Player player)
         {
-            ulong PlayerDiscordID = GetPlayerDiscordID(player);
+            String PlayerSteamID = GetPlayerSteamID(player);
             rFrameworkPlayer rPlayer;
-            ConnectingPlayers.TryGetValue(PlayerDiscordID, out rPlayer);
+            ConnectingPlayers.TryGetValue(PlayerSteamID, out rPlayer);
 
             if (rPlayer!=null && !rPlayer.IsPlayerLoaded)
             {
                 //Fix rPlayer 
-                OnlinePlayers.Add(GetPlayerDiscordID(player), rPlayer);
-                ConnectingPlayers.Remove(PlayerDiscordID);
+                OnlinePlayers.Add(GetPlayerSteamID(player), rPlayer);
+                ConnectingPlayers.Remove(PlayerSteamID);
                 rPlayer.IsPlayerLoaded = true;
 
                 UpdateClientPermissions(player);
@@ -146,9 +171,9 @@ namespace rFrameworkServer
             }
         }
 
-        public static void ChangePlayerMoney(ulong PlayerDiscordID, int BankBalanceChange, int CashBalanceChange)
+        public static void ChangePlayerMoney(String PlayerSteamID, int BankBalanceChange, int CashBalanceChange)
         {
-            rFrameworkPlayer rPlayer = OnlinePlayers[PlayerDiscordID];
+            rFrameworkPlayer rPlayer = OnlinePlayers[PlayerSteamID];
 
             rPlayer.BankBalance += BankBalanceChange;
             rPlayer.CashBalance += CashBalanceChange;
@@ -189,7 +214,7 @@ namespace rFrameworkServer
                     DebugWrite("Player " + player.Name + " withdrew ^2$" + Math.Abs(amount));
                     TriggerClientEvent(player, "rFramework:ATMTransactionSuccess");
 
-                    rBankTransfer transfer = new rBankTransfer("", rPlayer.DiscordID, player.Name, "Cash Withdrawn", false, true, amount, DateTime.Now);
+                    rBankTransfer transfer = new rBankTransfer(rPlayer.SteamID, rPlayer.SteamID, "Cash Withdrawn", false, true, amount, DateTime.Now);
                     rPlayer.Transfers.Add(transfer);
                     DatabaseUpdateTransaction(transfer);
                     UpdatePlayerTransactions(rPlayer);
@@ -206,7 +231,7 @@ namespace rFrameworkServer
                     DebugWrite("Player " + player.Name + " deposited ^1$" + Math.Abs(amount));
                     TriggerClientEvent(player, "rFramework:ATMTransactionSuccess");
 
-                    rBankTransfer transfer = new rBankTransfer("", rPlayer.DiscordID, player.Name, "Cash Deposited", false, false, amount, DateTime.Now);
+                    rBankTransfer transfer = new rBankTransfer(rPlayer.SteamID, rPlayer.SteamID, "Cash Deposited", false, false, amount, DateTime.Now);
                     rPlayer.Transfers.Add(transfer);
                     DatabaseUpdateTransaction(transfer);
                     UpdatePlayerTransactions(rPlayer);
@@ -239,13 +264,13 @@ namespace rFrameworkServer
 
         public static void DropPlayerFromDatabaseUpdates(rFrameworkPlayer rPlayer)
         {
-            OnlinePlayers.Remove(rPlayer.DiscordID);
+            OnlinePlayers.Remove(rPlayer.SteamID);
         }
 
         public static rFrameworkPlayer GetrFrameworkPlayer(Player player)
         {
             rFrameworkPlayer rPlayer = null;
-            OnlinePlayers.TryGetValue(GetPlayerDiscordID(player), out rPlayer);
+            OnlinePlayers.TryGetValue(GetPlayerSteamID(player), out rPlayer);
             return rPlayer;
         }
     }

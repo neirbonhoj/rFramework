@@ -77,14 +77,16 @@ namespace rFrameworkServer
 
         public async static Task InitializeDatabasePlayer(rFrameworkPlayer rPlayer)
         {
-            string SQLQuery = "SELECT * FROM `users` WHERE `discordID` = " + rPlayer.DiscordID;
+            string SQLQuery = "SELECT * FROM `users` WHERE `identifier` = '" + rPlayer.SteamID+"'";
+            DebugWrite(SQLQuery);
             MySqlConnection SQLConnection = GetDBConnection();
             await SQLConnection.OpenAsync();
             MySqlCommand SQLCommand = new MySqlCommand(SQLQuery, SQLConnection);
             MySqlDataReader SQLDataReader = (MySqlDataReader)await SQLCommand.ExecuteReaderAsync();
             if (!SQLDataReader.Read())
             {
-                SQLQuery = "INSERT INTO `users` (discordID, name) VALUES ('" + rPlayer.DiscordID + "', '" + rPlayer.CorePlayer.Name + "')";
+                SQLQuery = "INSERT INTO `users` (identifier, name) VALUES ('" + rPlayer.SteamID + "', '" + rPlayer.CorePlayer.Name + "')";
+                DebugWrite(SQLQuery);
                 SQLConnection = GetDBConnection();
                 SQLCommand = new MySqlCommand(SQLQuery, SQLConnection);
                 await SQLConnection.OpenAsync();
@@ -95,15 +97,15 @@ namespace rFrameworkServer
                 rPlayer.Vehicles = "";
             } else
             {
-                rPlayer.BankBalance = SQLDataReader.GetInt64(2);
-                rPlayer.CashBalance = SQLDataReader.GetInt64(3);
-                rPlayer.Vehicles = SQLDataReader.GetString(4);
+                rPlayer.BankBalance = SQLDataReader.GetInt64(3);
+                rPlayer.CashBalance = SQLDataReader.GetInt64(4);
+                rPlayer.Vehicles = SQLDataReader.GetString(5);
 
                 SQLCommand.Dispose();
                 SQLDataReader.Dispose();
 
                 //Get transactions
-                SQLQuery = "SELECT * FROM `transactions` WHERE `player_discordid` = " + rPlayer.DiscordID;
+                SQLQuery = "SELECT * FROM `transactions` WHERE `from_player` = '" + rPlayer.SteamID+"' OR 'to_player' = '" + rPlayer.SteamID+"'";
                 SQLCommand = new MySqlCommand(SQLQuery, SQLConnection);
                 SQLDataReader = (MySqlDataReader)await SQLCommand.ExecuteReaderAsync();
 
@@ -111,9 +113,9 @@ namespace rFrameworkServer
 
                 while(SQLDataReader.Read())
                 {
-                    rBankTransfer transaction = new rBankTransfer(SQLDataReader.GetString(2), (ulong)SQLDataReader.GetInt64(0), 
-                        SQLDataReader.GetString(1), SQLDataReader.GetString(3), (SQLDataReader.GetString(2)!=null) ? false : true, 
-                        (SQLDataReader.GetString(3).Equals("Cash Withdrawn")) ? true : false, (int)SQLDataReader.GetInt64(4), DateTime.Parse(SQLDataReader.GetString(5)));
+                    rBankTransfer transaction = new rBankTransfer(SQLDataReader.GetString(1), SQLDataReader.GetString(0), 
+                        SQLDataReader.GetString(2), (SQLDataReader.GetString(0).Equals(SQLDataReader.GetString(1)) ? true : false), 
+                        (SQLDataReader.GetString(3).Equals("Cash Withdrawn")) ? true : false, (int)SQLDataReader.GetInt64(3), DateTime.Parse(SQLDataReader.GetString(4)));
                     transactions.Add(transaction);
                 }
 
@@ -128,10 +130,10 @@ namespace rFrameworkServer
 
         public static void DatabaseUpdatePlayer(List<rFrameworkPlayer> players)
         {
-            string SQLQuery = "INSERT INTO users (discordID, bank, cash, vehicles) VALUES ";
+            string SQLQuery = "INSERT INTO users (identifier, bank, cash, vehicles) VALUES ";
             foreach (rFrameworkPlayer rPlayer in players)
             {
-                SQLQuery += "(" + rPlayer.DiscordID + ", " + rPlayer.BankBalance + ", " + rPlayer.CashBalance + ", '" + rPlayer.Vehicles+"'), ";
+                SQLQuery += "('" + rPlayer.SteamID + "', " + rPlayer.BankBalance + ", " + rPlayer.CashBalance + ", '" + rPlayer.Vehicles+"'), ";
 
                 if(rPlayer.IsPlayerLoaded && !(rPlayer.CorePlayer.Ping>0))
                 {
@@ -157,10 +159,10 @@ namespace rFrameworkServer
 
         public static void DatabaseUpdateTransaction(rBankTransfer transfer)
         {
-            string SQLQuery = "INSERT INTO transactions (player_discordid, player_name, sender_name, reason, amount, time) VALUES ";
+            string SQLQuery = "INSERT INTO transactions (to_player, from_player, reason, amount, date) VALUES ";
 
-            SQLQuery += "(" + transfer.recipientDiscordID + ", '" + transfer.recipientName 
-                + "', '" + transfer.senderName + "', '" + transfer.reason + "', '"+transfer.amount+"', '"+transfer.time+"')";
+            SQLQuery += "('" + transfer.sender_steamid + "', '" + transfer.recipient_steamid 
+                + "', '" + transfer.reason + "', '"+transfer.amount+"', '"+transfer.time+"')";
 
             MySqlConnection SQLConnection = GetDBConnection();
             SQLConnection.Open();
@@ -204,7 +206,7 @@ namespace rFrameworkServer
             {
                 if (player.Identifiers["discord"] == null)
                 {
-                    player.Drop("Discord ID Not Found - try opening Discord and restarting FiveM.");
+                    //player.Drop("Discord ID Not Found - try opening Discord and restarting FiveM.");
                     return 0;
                 }
                 ulong DiscordID = ulong.Parse(player.Identifiers["discord"]);
@@ -214,6 +216,26 @@ namespace rFrameworkServer
                 DebugWrite("Critical Error With [GetPlayerDiscordID]");
                 DebugWrite(e.Message);
                 return 0;
+            }
+        }
+
+        public static string GetPlayerSteamID(Player player)
+        {
+            try
+            {
+                if (GetPlayerIdentifier(player.Handle, 0) == null)
+                {
+                    player.Drop("SteamID Not Found - try opening Steam and restarting FiveM.");
+                    return "";
+                }
+                String SteamID = GetPlayerIdentifier(player.Handle, 0).Substring(6);
+                return SteamID;
+            }
+            catch (Exception e)
+            {
+                DebugWrite("Critical Error With [GetPlayerSteamID]");
+                DebugWrite(e.Message);
+                return "";
             }
         }
 

@@ -31,11 +31,12 @@ namespace rFrameworkClient
 
         private async static Task ControlCheck()
         {
-            if(IsControlPressed(0, 20))
+            if (IsControlPressed(0, 20))
             {
                 ShowHudComponentThisFrame(3);
                 ShowHudComponentThisFrame(4);
             }
+            await Delay(100);
         }
 
         public static void ReceivePermissions(string jsonPermissionsList)
@@ -53,14 +54,20 @@ namespace rFrameworkClient
 
         public static void UpdateMoney(long BankAmount, long CashAmount)
         {
+            ProfilerEnterScope("SetStatInt - 1");
             PlayerCash = CashAmount;
             PlayerBank = BankAmount;
+            ProfilerExitScope();
+            ProfilerEnterScope("SetStatInt - UpdateMoney");
             StatSetInt((uint)GetHashKey("BANK_BALANCE"), (int)BankAmount, true);
             StatSetInt((uint)GetHashKey("MP0_WALLET_BALANCE"), (int)CashAmount, true);
+            ProfilerExitScope();
+            ProfilerEnterScope("SetStatInt - 2");
             if (ATMManager.isUsingATM)
             {
-                ATMManager.UpdateDisplayBalance();
+                //ATMManager.UpdateDisplayBalance();
             }
+            ProfilerExitScope();
         }
 
         public static void UpdateTransactions(string transfersJson)

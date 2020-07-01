@@ -10,16 +10,18 @@ namespace rFrameworkServer
     {
         public Player CorePlayer; 
         public ulong DiscordID;
+        public String SteamID;
         public long BankBalance;
         public long CashBalance;
         public string Vehicles;
         public bool IsPlayerLoaded;
         public List<rBankTransfer> Transfers;
 
-        public rFrameworkPlayer(Player CorePlayer, ulong DiscordID)
+        public rFrameworkPlayer(Player CorePlayer, ulong DiscordID, String SteamID)
         {
             this.CorePlayer = CorePlayer;
             this.DiscordID = DiscordID;
+            this.SteamID = SteamID;
             BankBalance = 0;
             CashBalance = 0;
             Vehicles = "";

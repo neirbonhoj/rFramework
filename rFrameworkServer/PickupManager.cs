@@ -32,8 +32,9 @@ namespace rFrameworkServer
                 ClientGuids.Remove(clientGuid);
             } else
             {
-                player.Drop("Unauthorized client event");
-                DebugWrite("Kicking player: " + player.Name + " | Discord ID: " + GetPlayerDiscordID(player) + " for an unauthorized client event");
+                player.Drop("You have been kicked");
+                DebugWrite("1");
+                DebugWrite("Kicking player: " + player.Name + " | Steam ID: " + GetPlayerSteamID(player) + " for an unauthorized client event");
             }
         }
 
@@ -47,7 +48,8 @@ namespace rFrameworkServer
                 ClientGuids.Remove(clientGuid);
             } else
             {
-                player.Drop("Unauthorized client event");
+                player.Drop("You have been kicked");
+                DebugWrite("2");
                 DebugWrite("Kicking player: " + player.Name + " | Discord ID: " + GetPlayerDiscordID(player) + " for an unauthorized client event");
             }
         }
@@ -55,7 +57,7 @@ namespace rFrameworkServer
         private void CanPlayerDropMoney([FromSource] Player player, int moneyAmount, long moneyType)
         {
             rFrameworkPlayer rPlayer;
-            PlayerManager.GetOnlinePlayers().TryGetValue(GetPlayerDiscordID(player), out rPlayer);
+            PlayerManager.GetOnlinePlayers().TryGetValue(GetPlayerSteamID(player), out rPlayer);
 
             if (rPlayer != null)
             {
@@ -77,7 +79,7 @@ namespace rFrameworkServer
 
         private async static void PlayerPickupCash([FromSource] Player player, int Amount)
         {
-            rFrameworkPlayer rPlayer = PlayerManager.GetOnlinePlayers()[Functions.GetPlayerDiscordID(player)];
+            rFrameworkPlayer rPlayer = PlayerManager.GetOnlinePlayers()[GetPlayerSteamID(player)];
             foreach (int Pickup in MoneyPickups.Keys)
             {
                 //if the entity no longer exists, it was the one picked up
@@ -96,7 +98,7 @@ namespace rFrameworkServer
 
         private async static void PlayerOpenCase([FromSource] Player player, int Amount, int FourDigitCode)
         {
-            rFrameworkPlayer rPlayer = PlayerManager.GetOnlinePlayers()[Functions.GetPlayerDiscordID(player)];
+            rFrameworkPlayer rPlayer = PlayerManager.GetOnlinePlayers()[GetPlayerSteamID(player)];
             foreach (int Pickup in CasePickups.Keys)
             {
                 if (!DoesEntityExist(Pickup))

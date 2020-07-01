@@ -9,7 +9,7 @@ using static rFrameworkClient.Functions;
 
 namespace rFrameworkClient
 {
-    class VehicleManager : BaseScript
+    class VehicleManager
     {
         public static List<rDealership> Dealerships;
         public static Dictionary<string, rVehicle> Vehicles;
@@ -17,22 +17,22 @@ namespace rFrameworkClient
         public VehicleManager()
         {
 
-            RegisterCommand("getvehicle", new Action<int, List<object>, string>((source, args, raw) =>
-            {
-                Vehicle Veh = new Vehicle(GetVehiclePedIsIn(Game.PlayerPed.Handle, false));
+            //RegisterCommand("getvehicle", new Action<int, List<object>, string>((source, args, raw) =>
+            //{
+            //    Vehicle Veh = new Vehicle(GetVehiclePedIsIn(Game.PlayerPed.Handle, false));
 
-                //Prints all possible mods
-                SetVehicleModKit(Veh.Handle, 0);
-                foreach (VehicleMod m in Veh.Mods.GetAllMods())
-                {
-                    DebugWrite(m.LocalizedModTypeName);
-                }
-            }), false);
+            //    //Prints all possible mods
+            //    SetVehicleModKit(Veh.Handle, 0);
+            //    foreach (VehicleMod m in Veh.Mods.GetAllMods())
+            //    {
+            //        DebugWrite(m.LocalizedModTypeName);
+            //    }
+            //}), false);
 
-            RegisterCommand("unlockdoor", new Action<int, List<object>, string>((source, args, raw) =>
-            {
-                //DoorSystem research - conclusion? almost none of it works in FiveM
-            }), false);
+            //RegisterCommand("unlockdoor", new Action<int, List<object>, string>((source, args, raw) =>
+            //{
+            //    //DoorSystem research - conclusion? almost none of it works in FiveM
+            //}), false);
         } 
     }
 }

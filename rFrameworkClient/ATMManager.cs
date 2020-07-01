@@ -18,6 +18,7 @@ namespace rFrameworkClient
         private readonly string scaleformID = "ATM";
 
         public static bool isUsingATM = false;
+        private static bool nearATM = false;
 
         private static bool latestTransactionIsWithdrawal = false;
         private static int latestTransactionAmount = 0;
@@ -30,6 +31,7 @@ namespace rFrameworkClient
         {
             -1126237515, -1364697528, 506770882
         };
+        private int CurrentATM = 0;
 
         private static int currentScreen;
 
@@ -42,50 +44,65 @@ namespace rFrameworkClient
             EventHandlers.Add("rFramework:ATMTransactionSuccess", new Action(OpenTransactionComplete));
 
             Tick += CheckIfATMNearby;
+            Tick += ControlCheck;
+            Tick += ATMHelpText;
 
             ClearPedTasks(Game.PlayerPed.Handle);
         }
 
+        private async Task ATMHelpText()
+        {
+            if (nearATM)
+            {
+                SetTextComponentFormat("STRING");
+                AddTextComponentString("Press ~INPUT_CONTEXT~ to access ATM.");
+                DisplayHelpTextFromStringLabel(0, false, true, -1);
+
+                ShowHudComponentThisFrame(3);
+                ShowHudComponentThisFrame(4);
+            }
+            await Delay(50);
+        }
+
+        private async Task ControlCheck()
+        {
+            if (IsControlPressed(0, 51) && nearATM && !isUsingATM)
+            {
+                Prop o = new Prop(GetClosestObjectOfType(Game.PlayerPed.Position.X, Game.PlayerPed.Position.Y, Game.PlayerPed.Position.Z, 2f, (uint)CurrentATM, false, true, true));
+
+                scaleform = null;
+                isUsingATM = true;
+
+                ClearPedTasks(Game.PlayerPed.Handle);
+                TaskGoStraightToCoord(Game.PlayerPed.Handle, o.Position.X - o.ForwardVector.X / 1.75f, o.Position.Y - o.ForwardVector.Y / 1.75f, Game.PlayerPed.Position.Z, 0.1f, 2000, o.Heading, 0);
+                WaitForATMAnim();
+            }
+            await Delay(100);
+        }
+
         private async Task CheckIfATMNearby()
         {
+            nearATM = false;
             if (!isUsingATM)
             {
                 Vector3 pos = Game.PlayerPed.Position;
                 foreach (int ATMObjectHash in ATMObjectHashes)
                 {
-                    if (GetClosestObjectOfType(pos.X, pos.Y, pos.Z, 1.5f, (uint)ATMObjectHash, false, false, false) != 0 && !IsPedInAnyVehicle(Game.PlayerPed.Handle, true))
+                    if (GetClosestObjectOfType(pos.X, pos.Y, pos.Z, 1.5f, (uint)ATMObjectHash, true, false, false) != 0 && !IsPedInAnyVehicle(Game.PlayerPed.Handle, true))
                     {
-                        SetTextComponentFormat("STRING");
-                        AddTextComponentString("Press ~INPUT_CONTEXT~ to access the ATM.");
-                        DisplayHelpTextFromStringLabel(0, false, true, -1);
-
-                        ShowHudComponentThisFrame(3);
-                        ShowHudComponentThisFrame(4);
-
-                        if (IsControlPressed(0, 51) && !isUsingATM)
-                        {
-                            Prop o = new Prop(GetClosestObjectOfType(pos.X, pos.Y, pos.Z, 2f, (uint)ATMObjectHash, false, true, true));
-
-                            scaleform = null;
-                            isUsingATM = true;
-
-                            ClearPedTasks(Game.PlayerPed.Handle);
-                            TaskGoStraightToCoord(Game.PlayerPed.Handle, o.Position.X - o.ForwardVector.X / 1.75f, o.Position.Y - o.ForwardVector.Y / 1.75f, pos.Z, 0.1f, 2000, o.Heading, 0);
-                            WaitForATMAnim();
-
-                            //ATM Anims are buggy still
-                        }
+                        nearATM = true;
+                        CurrentATM = ATMObjectHash;
                     }
                 }
             }
-            await Delay(0);
+            await Delay(500);
         }
 
         private async Task WaitForATMAnim()
         {
             await Delay(200);
 
-            while (Game.PlayerPed.Velocity.Length()>0 || Game.PlayerPed.RotationVelocity.Length() > 0)
+            while (Game.PlayerPed.Velocity.Length() > 0 || Game.PlayerPed.RotationVelocity.Length() > 0)
             {
                 await Delay(0);
             }
@@ -115,7 +132,8 @@ namespace rFrameworkClient
             {
                 SetMouseCursorActiveThisFrame();
                 scaleform.CallFunction("SET_MOUSE_INPUT", GetDisabledControlNormal(0, (int)Control.CursorX), GetDisabledControlNormal(0, (int)Control.CursorY));
-            } else
+            }
+            else
             {
                 scaleform.CallFunction("setCursorInvisible");
                 scaleform.CallFunction("SET_MOUSE_INPUT", 0, 0);
@@ -131,19 +149,23 @@ namespace rFrameworkClient
                     int clickResult = GetScaleformMovieMethodReturnValueInt(returnScaleform);
 
                     HandleMouseSelection(clickResult);
-                } else
+                }
+                else
                 {
                     //If the click result isn't ready to be read, it needs to be offloaded
                     //to the next tick but not using delay
                     awaitingResult = true;
                 }
-            } else if(IsDisabledControlJustPressed(0, (int)Control.FrontendCancel))
+            }
+            else if (IsDisabledControlJustPressed(0, (int)Control.FrontendCancel))
             {
                 CloseATM();
-            } else if(IsDisabledControlJustPressed(0, (int)Control.WeaponWheelNext))
+            }
+            else if (IsDisabledControlJustPressed(0, (int)Control.WeaponWheelNext))
             {
                 scaleform.CallFunction("SCROLL_PAGE", -40);
-            } else if(IsDisabledControlJustPressed(0, (int)Control.WeaponWheelPrev))
+            }
+            else if (IsDisabledControlJustPressed(0, (int)Control.WeaponWheelPrev))
             {
                 scaleform.CallFunction("SCROLL_PAGE", 40);
             }
@@ -163,7 +185,8 @@ namespace rFrameworkClient
             if (IsDisabledControlJustPressed(0, 27))
             {
                 scaleform.CallFunction("SET_INPUT_EVENT", 8);
-            } else if (IsDisabledControlJustPressed(0, 20))
+            }
+            else if (IsDisabledControlJustPressed(0, 20))
             {
                 scaleform.CallFunction("SET_INPUT_EVENT", 9);
             }
@@ -202,7 +225,8 @@ namespace rFrameworkClient
                         if (PlayerManager.GetPlayerCash() > 0)
                         {
                             OpenDepositScreen();
-                        } else
+                        }
+                        else
                         {
                             DisplayATMError("You have insufficient cash to make a deposit.");
                         }
@@ -217,7 +241,8 @@ namespace rFrameworkClient
                         OpenMenuScreen();
                         break;
                 }
-            } else if (currentScreen == 1 || currentScreen == 2)
+            }
+            else if (currentScreen == 1 || currentScreen == 2)
             {
                 switch (selection)
                 {
@@ -228,7 +253,8 @@ namespace rFrameworkClient
                         DepositWithdrawalButtonHandle(buttonParams[selection]);
                         break;
                 }
-            } else if(currentScreen == 3)
+            }
+            else if (currentScreen == 3)
             {
                 switch (selection)
                 {
@@ -240,16 +266,19 @@ namespace rFrameworkClient
                         if (latestTransactionIsWithdrawal)
                         {
                             OpenWithdrawalScreen();
-                        } else
+                        }
+                        else
                         {
                             OpenDepositScreen();
                         }
                         break;
                 }
-            } else if (currentScreen == 5)
+            }
+            else if (currentScreen == 5)
             {
                 OpenMenuScreen();
-            } else if(currentScreen == 6)
+            }
+            else if (currentScreen == 6)
             {
                 switch (selection)
                 {
@@ -281,8 +310,8 @@ namespace rFrameworkClient
         public static async void UpdateDisplayBalance()
         {
             scaleform.CallFunction("DISPLAY_BALANCE", new object[]{
-                Game.Player.Name, "Account balance ", (int)PlayerManager.GetPlayerBank()
-            });
+                    Game.Player.Name, "Account balance ", (int)PlayerManager.GetPlayerBank()
+                });
         }
 
         private async void CloseATM()
@@ -346,7 +375,7 @@ namespace rFrameworkClient
 
             int amount = (int)PlayerManager.GetPlayerCash();
             SetupATMMoneyButtons(amount);
-           
+
             UpdateDisplayBalance();
             scaleform.CallFunction("DISPLAY_CASH_OPTIONS");
 
@@ -362,10 +391,10 @@ namespace rFrameworkClient
             scaleform.CallFunction("SET_DATA_SLOT", 1, "Back");
             if (transactions != null)
             {
-                int i = transactions.Count+1;
+                int i = transactions.Count + 1;
                 foreach (rBankTransfer transaction in transactions)
                 {
-                    scaleform.CallFunction("SET_DATA_SLOT", i, (transaction.isWithdrawal) ? 0 : 1, transaction.amount, transaction.reason+" "+transaction.time.ToShortDateString());
+                    scaleform.CallFunction("SET_DATA_SLOT", i, (transaction.isWithdrawal) ? 0 : 1, transaction.amount, transaction.reason + " " + transaction.time.ToShortDateString());
                     i--;
                 }
             }
@@ -378,13 +407,13 @@ namespace rFrameworkClient
             if (amount >= 100000)
             {
                 buttonParams = new Dictionary<int, int>()
-                {
-                    {1, 50 },
-                    {2, 500 },
-                    {3, 2500 },
-                    {5, 10000 },
-                    {6, 100000 }
-                };
+                    {
+                        {1, 50 },
+                        {2, 500 },
+                        {3, 2500 },
+                        {5, 10000 },
+                        {6, 100000 }
+                    };
                 scaleform.CallFunction("SET_DATA_SLOT", 1, "$50");
                 scaleform.CallFunction("SET_DATA_SLOT", 2, "$500");
                 scaleform.CallFunction("SET_DATA_SLOT", 3, "$2,500");
@@ -400,12 +429,12 @@ namespace rFrameworkClient
             else if (amount >= 10000)
             {
                 buttonParams = new Dictionary<int, int>()
-                {
-                    {1, 50 },
-                    {2, 500 },
-                    {3, 2500 },
-                    {5, 10000 }
-                };
+                    {
+                        {1, 50 },
+                        {2, 500 },
+                        {3, 2500 },
+                        {5, 10000 }
+                    };
                 scaleform.CallFunction("SET_DATA_SLOT", 1, "$50");
                 scaleform.CallFunction("SET_DATA_SLOT", 2, "$500");
                 scaleform.CallFunction("SET_DATA_SLOT", 3, "$2,500");
@@ -420,11 +449,11 @@ namespace rFrameworkClient
             else if (amount >= 2500)
             {
                 buttonParams = new Dictionary<int, int>()
-                {
-                    {1, 50 },
-                    {2, 500 },
-                    {3, 2500 }
-                };
+                    {
+                        {1, 50 },
+                        {2, 500 },
+                        {3, 2500 }
+                    };
                 scaleform.CallFunction("SET_DATA_SLOT", 1, "$50");
                 scaleform.CallFunction("SET_DATA_SLOT", 2, "$500");
                 scaleform.CallFunction("SET_DATA_SLOT", 3, "$2,500");
@@ -438,10 +467,10 @@ namespace rFrameworkClient
             else if (amount >= 500)
             {
                 buttonParams = new Dictionary<int, int>()
-                {
-                    {1, 50 },
-                    {2, 500 }
-                };
+                    {
+                        {1, 50 },
+                        {2, 500 }
+                    };
                 scaleform.CallFunction("SET_DATA_SLOT", 1, "$50");
                 scaleform.CallFunction("SET_DATA_SLOT", 2, "$500");
                 scaleform.CallFunction("SET_DATA_SLOT", 4, "Back");
@@ -454,9 +483,9 @@ namespace rFrameworkClient
             else if (amount >= 50)
             {
                 buttonParams = new Dictionary<int, int>()
-                {
-                    {1, 50 }
-                };
+                    {
+                        {1, 50 }
+                    };
                 scaleform.CallFunction("SET_DATA_SLOT", 1, "$50");
                 scaleform.CallFunction("SET_DATA_SLOT", 4, "Back");
                 if (!buttonParams.Values.Contains<int>(amount))
@@ -468,7 +497,7 @@ namespace rFrameworkClient
             else
             {
                 buttonParams = new Dictionary<int, int>()
-                {};
+                { };
                 scaleform.CallFunction("SET_DATA_SLOT", 4, "Back");
                 if (!buttonParams.Values.Contains<int>(amount))
                 {
@@ -486,7 +515,8 @@ namespace rFrameworkClient
             if (isWithdrawal)
             {
                 scaleform.CallFunction("SET_DATA_SLOT", 0, "Do you wish to withdraw $" + String.Format("{0:n0}", Math.Abs(amount)) + " from your account?");
-            } else
+            }
+            else
             {
                 scaleform.CallFunction("SET_DATA_SLOT", 0, "Do you wish to deposit $" + String.Format("{0:n0}", Math.Abs(amount)) + " into your account?");
             }
@@ -519,7 +549,7 @@ namespace rFrameworkClient
         private async Task<Scaleform> LoadScaleform(string id)
         {
             Scaleform scaleform = new Scaleform(id);
-            
+
             while (!scaleform.IsLoaded)
             {
                 RequestScaleformMovieInteractive(id);

@@ -28,7 +28,8 @@ namespace rFrameworkClient
                 try
                 {
                     MaxPickups = int.Parse(config["MaxPickupCount"].ToString());
-                } catch(Exception e)
+                }
+                catch (Exception e)
                 {
                     MaxPickups = 3;
                 }
@@ -37,14 +38,16 @@ namespace rFrameworkClient
                     if (MoneyAmount < 20000)
                     {
                         TriggerServerEvent("rFramework:VerifyDropMoney", MoneyAmount, CashPickup, 0);
-                    } else
+                    }
+                    else
                     {
                         TriggerServerEvent("rFramework:VerifyDropMoney", MoneyAmount, CasePickup, 0);
                     }
-                } else
+                }
+                else
                 {
                     bool removed = false;
-                    foreach(Prop p in ActivePickups)
+                    foreach (Prop p in ActivePickups)
                     {
                         if (!p.Exists())
                         {
@@ -63,7 +66,8 @@ namespace rFrameworkClient
                         {
                             TriggerServerEvent("rFramework:VerifyDropMoney", MoneyAmount, CasePickup, 0);
                         }
-                    } else
+                    }
+                    else
                     {
                         SetNotificationTextEntry("STRING");
                         AddTextComponentString("Max Pickup Count Met");
@@ -73,7 +77,7 @@ namespace rFrameworkClient
             }), false);
 
             EventHandlers.Add("gameEventTriggered", new Action<string, List<dynamic>>(OnGameEventTriggered));
-            EventHandlers.Add("rFramework:CreatePickup", new Action<int, long, string>(DropPickup));
+            EventHandlers.Add("rFramework:CreatePickup", new Action<int, long, string>(DropPickup));      
         }
 
         private async void DropPickup(int amount, long type, string secureClientGuid)
@@ -88,7 +92,8 @@ namespace rFrameworkClient
             {
                 PickupProp = await CreateAmbientPickup(PickupType.MoneyVariable, SPC, CashModel, amount);
                 TriggerServerEvent("rFramework:RegisterMoneyPickup", PickupProp.NetworkId, amount, secureClientGuid);
-            } else if(type == CasePickup)
+            }
+            else if (type == CasePickup)
             {
                 PickupProp = await CreateAmbientPickup(PickupType.MoneySecurityCase, SPC, CaseModel, amount);
                 TriggerServerEvent("rFramework:RegisterCasePickup", PickupProp.NetworkId, amount, secureClientGuid);
@@ -111,7 +116,8 @@ namespace rFrameworkClient
                 if (args[0].ToString().Equals(CaseModel.Hash.ToString()))
                 {
                     TriggerServerEvent("rFramework:PickupCase", amount);
-                } else if(args[0].ToString().Equals(CashModel.Hash.ToString()))
+                }
+                else if (args[0].ToString().Equals(CashModel.Hash.ToString()))
                 {
                     TriggerServerEvent("rFramework:PickupCash", amount);
                 }
